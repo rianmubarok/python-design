@@ -37,7 +37,7 @@ def save(fig, name):
 def parallel_woven():
     fig, ax = setup_ax()
     n_lines = 30
-    gap = 100 / n_lines
+    gap = 110 / n_lines
     for i in range(n_lines):
         y = -5 + i * gap
         x_start = -5

@@ -37,7 +37,7 @@ def save(fig, name):
 def parallel_crosshatch_parallel():
     fig, ax = setup_ax()
     n_lines = 35
-    spacing = 100 / n_lines
+    spacing = 110 / n_lines
     for i in range(n_lines):
         y = -5 + i * spacing
         ax.plot([-5, 105], [y, y], color="black", linewidth=0.5, alpha=0.6)
