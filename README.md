@@ -8,22 +8,39 @@
 - DPI: 300
 - Format: PNG + SVG
 
-### Penamaan File
-- Gunakan bahasa Inggris
-- Format: `[deskripsi_utama]_[elemen_desain]_[gaya]_[variasi]`
-- Contoh: `parallel_gradient_lines_pattern_abstract_texture`
-- Hindari spasi, gunakan underscore (`_`)
-
 ### Struktur Folder
 ```
 python-design/
-├── batch_XX_[kategori].py
-├── output/
-│   └── batch_XX_[kategori]/
-│       ├── png/
-│       └── svg/
+├── parallel/
+│   ├── parallel_random.py
+│   ├── parallel_gradient.py
+│   └── output/png/ & svg/
+├── waves/
+│   ├── zigzag_wave.py
+│   └── output/png/ & svg/
+├── radial/
+├── grid/
+├── contour/
+├── spiral/
+├── optical/
+├── geometric/
+├── organic/
+├── dynamic/
+├── gallery.html
 └── README.md
 ```
+
+### Cara Tambah Variasi Baru
+1. Masuk folder kategori (misal `parallel/`)
+2. Buat file .py baru dengan nama variasi
+3. Jalankan script
+4. Output otomatis masuk ke `output/png/` dan `output/svg/`
+
+### Penamaan File
+- Gunakan bahasa Inggris
+- Format: `[kategori]_[variasi]`
+- Contoh: `parallel_random.py`, `zigzag_wave.py`
+- Hindari spasi, gunakan underscore (`_`)
 
 ### Prasyarat
 - Python 3.x
@@ -37,8 +54,12 @@ pip install matplotlib numpy
 
 ### Menjalankan
 ```bash
-python batch_XX_[kategori].py
+cd parallel
+python parallel_random.py
 ```
+
+### Gallery
+Buka `gallery.html` di browser, klik "Open Folder", pilih folder project ini.
 
 ### Lisensi
 - Hasil generate dapat dijual di platform mikrostok

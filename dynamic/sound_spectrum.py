@@ -2,20 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-# ============================================================
-# BATCH 10 — DYNAMIC BARS
-# Pola bar dinamis
-# Setting: 4000x4000 px, 300 DPI, 1:1
-# Output: PNG + SVG
-# ============================================================
-
 SIZE = 4000
 DPI = 300
 SEED = 42
-BATCH = "batch_10_dynamic"
 
-PNG_DIR = Path(f"output/{BATCH}/png")
-SVG_DIR = Path(f"output/{BATCH}/svg")
+PNG_DIR = Path("output/png")
+SVG_DIR = Path("output/svg")
 PNG_DIR.mkdir(parents=True, exist_ok=True)
 SVG_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -42,12 +34,8 @@ def save(fig, name):
     print(f"Tersimpan: {png_path} | {svg_path}")
 
 
-# ============================================================
-# 1. SOUND SPECTRUM — Bar spektrum suara
-# ============================================================
 def sound_spectrum():
     fig, ax = setup_ax()
-
     n_bars = 80
     x_positions = np.linspace(-5, 105, n_bars)
     for i, x in enumerate(x_positions):
@@ -57,14 +45,8 @@ def sound_spectrum():
         y_top = 50 + height / 2
         lw = 1.0 + 0.8 * np.sin(i * 0.2)
         ax.plot([x, x], [y_base, y_top], color="black", linewidth=lw)
+    save(fig, "sound_spectrum")
 
-    save(fig, "sound_spectrum_bars_pattern_abstract_audio_visual")
 
-
-# ============================================================
-# RUN
-# ============================================================
 if __name__ == "__main__":
-    print("=== BATCH 10: DYNAMIC BARS ===")
     sound_spectrum()
-    print("Selesai!")
