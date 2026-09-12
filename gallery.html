@@ -14,24 +14,28 @@
         .folder-btn:hover { background: #e0e0e0; }
         .folder-path { font-size: 0.8rem; color: #666; font-family: monospace; }
         .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-        .filter-row:last-child { margin-bottom: 0; }
-        .filter-label { font-size: 0.7rem; color: #555; text-transform: uppercase; letter-spacing: 0.5px; align-self: center; min-width: 60px; }
-        .filter-btn { padding: 6px 14px; border: 1px solid #333; background: transparent; color: #888; border-radius: 16px; cursor: pointer; font-size: 0.8rem; }
+        .filter-label { font-size: 0.7rem; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px; align-self: center; }
+        .filter-btn { padding: 5px 12px; border: 1px solid #333; background: transparent; color: #888; border-radius: 14px; cursor: pointer; font-size: 0.75rem; }
         .filter-btn:hover { border-color: #555; color: #fff; }
         .filter-btn.active { background: #fff; color: #000; border-color: #fff; }
         .filter-btn[data-status="submitted"] { border-color: #22c55e; color: #22c55e; }
-        .filter-btn[data-status="submitted"].active { background: #22c55e; color: #000; }
-        .stats { margin-top: 10px; font-size: 0.8rem; color: #555; }
+        .filter-btn[data-status="submitted"].active { background: #22c55e; color: #000; border-color: #22c55e; }
+        .filter-btn[data-status="draft"] { border-color: #666; color: #666; }
+        .filter-btn[data-status="draft"].active { background: #666; color: #000; border-color: #666; }
+        .stats { margin-top: 8px; font-size: 0.8rem; color: #555; }
         .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; padding: 24px 30px; }
         .card { background: #141414; border-radius: 8px; overflow: hidden; transition: transform 0.15s ease; position: relative; }
         .card:hover { transform: translateY(-2px); }
-        .card-badge { position: absolute; top: 8px; right: 8px; padding: 3px 8px; border-radius: 10px; font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; z-index: 10; }
-        .card-badge.submitted { background: #22c55e; color: #000; }
-        .card-badge.biasa { background: #444; color: #aaa; }
+        .card-badge { position: absolute; top: 8px; right: 8px; width: 10px; height: 10px; border-radius: 50%; z-index: 10; }
+        .card-badge.submitted { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+        .card-badge.draft { background: #666; }
         .card-img { width: 100%; aspect-ratio: 1; object-fit: cover; cursor: pointer; background: #1a1a1a; }
         .card-info { padding: 12px; }
         .card-name { font-size: 0.8rem; color: #ccc; word-break: break-word; }
         .card-category { font-size: 0.7rem; color: #555; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .card-status-label { font-size: 0.65rem; margin-top: 6px; padding: 2px 8px; border-radius: 10px; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+        .card-status-label.submitted { background: #22c55e22; color: #22c55e; }
+        .card-status-label.draft { background: #66666622; color: #666; }
         .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: calc(100vh - 200px); text-align: center; color: #444; }
         .empty-state h2 { font-size: 1.2rem; font-weight: 400; margin-bottom: 10px; color: #666; }
         .empty-state p { font-size: 0.85rem; margin-bottom: 20px; max-width: 400px; line-height: 1.5; }
@@ -48,7 +52,7 @@
         .modal-status-btn:hover { border-color: #555; color: #fff; }
         .modal-status-btn.active { font-weight: 500; }
         .modal-status-btn[data-status="submitted"].active { background: #22c55e; color: #000; border-color: #22c55e; }
-        .modal-status-btn[data-status="biasa"].active { background: #555; color: #fff; border-color: #555; }
+        .modal-status-btn[data-status="draft"].active { background: #666; color: #000; border-color: #666; }
         .debug { position: fixed; bottom: 10px; right: 10px; font-size: 0.7rem; color: #333; font-family: monospace; }
     </style>
 </head>
@@ -59,8 +63,8 @@
             <button class="folder-btn" id="openFolder">Open Folder</button>
         </div>
         <div class="folder-path" id="folderPath">No folder selected</div>
-        <div class="filter-row" id="categoryFilters"></div>
-        <div class="filter-row" id="statusFilters"></div>
+        <div class="filter-row" id="filterCategories"></div>
+        <div class="filter-row" id="filterStatus"></div>
         <div class="stats" id="stats"></div>
     </div>
 
@@ -80,7 +84,7 @@
             <div class="modal-meta">4000 x 4000 px | 300 DPI</div>
             <div class="modal-status-btns" id="modalStatusBtns">
                 <button class="modal-status-btn" data-status="submitted">Submitted</button>
-                <button class="modal-status-btn" data-status="biasa">Biasa</button>
+                <button class="modal-status-btn" data-status="draft">Draft</button>
             </div>
         </div>
     </div>
@@ -98,8 +102,8 @@
         const openFolderBtn = document.getElementById('openFolder');
         const openFolderEmpty = document.getElementById('openFolderEmpty');
         const folderPathEl = document.getElementById('folderPath');
-        const categoryFiltersEl = document.getElementById('categoryFilters');
-        const statusFiltersEl = document.getElementById('statusFilters');
+        const filterCategoriesEl = document.getElementById('filterCategories');
+        const filterStatusEl = document.getElementById('filterStatus');
         const statsEl = document.getElementById('stats');
         const galleryEl = document.getElementById('gallery');
         const emptyState = document.getElementById('emptyState');
@@ -110,10 +114,7 @@
         const modalStatusBtns = document.getElementById('modalStatusBtns');
         const debugEl = document.getElementById('debug');
 
-        function log(msg) {
-            console.log(msg);
-            debugEl.textContent = msg;
-        }
+        function log(msg) { console.log(msg); debugEl.textContent = msg; }
 
         function getStatusMap() {
             try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
@@ -127,7 +128,7 @@
         }
 
         function getStatus(name) {
-            return getStatusMap()[name] || 'biasa';
+            return getStatusMap()[name] || 'draft';
         }
 
         function initSubmittedList() {
@@ -142,8 +143,11 @@
                 'parallel_offset_chain', 'parallel_nested_rectangle', 'parallel_organic_flow', 'parallel_multi_layer'
             ];
             const map = getStatusMap();
-            for (const name of list) { map[name] = 'submitted'; }
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+            let changed = false;
+            for (const name of list) {
+                if (!map[name]) { map[name] = 'submitted'; changed = true; }
+            }
+            if (changed) localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
         }
 
         async function openFolder() {
@@ -157,9 +161,7 @@
                     log(`Found ${allImages.length} images`);
                     processImages();
                 } catch (err) {
-                    if (err.name !== 'AbortError') {
-                        log('Error: ' + err.message);
-                    }
+                    if (err.name !== 'AbortError') { log('Error: ' + err.message); console.error(err); }
                 }
             } else {
                 const input = document.createElement('input');
@@ -174,31 +176,29 @@
 
         async function scanAll(dirHandle) {
             for await (const entry of dirHandle.values()) {
-                if (entry.kind === 'directory') {
-                    await scanRecursive(entry, entry.name);
-                }
+                if (entry.kind === 'directory') await scanRecursive(entry, entry.name);
             }
         }
 
         async function scanRecursive(dirHandle, path) {
             try {
-                const permission = await dirHandle.requestPermission({ mode: 'read' });
-                if (permission !== 'granted') { log('Permission denied: ' + path); return; }
-            } catch (e) { return; }
+                const p = await dirHandle.requestPermission({ mode: 'read' });
+                if (p !== 'granted') { log('Permission denied: ' + path); return; }
+            } catch { return; }
             for await (const entry of dirHandle.values()) {
                 if (entry.kind === 'directory') {
                     const newPath = path + '/' + entry.name;
-                    if (entry.name === 'jpg') { await scanJpgFolder(entry, path); }
-                    else { await scanRecursive(entry, newPath); }
+                    if (entry.name === 'jpg') await scanJpgFolder(entry, path);
+                    else await scanRecursive(entry, newPath);
                 }
             }
         }
 
         async function scanJpgFolder(dirHandle, basePath) {
             try {
-                const permission = await dirHandle.requestPermission({ mode: 'read' });
-                if (permission !== 'granted') return;
-            } catch (e) { return; }
+                const p = await dirHandle.requestPermission({ mode: 'read' });
+                if (p !== 'granted') return;
+            } catch { return; }
             const category = basePath.split('/').pop();
             for await (const entry of dirHandle.values()) {
                 if (entry.kind === 'file' && entry.name.endsWith('.jpg')) {
@@ -210,7 +210,7 @@
                             category: category,
                             size: file.size
                         });
-                    } catch (e) { log('Failed: ' + entry.name); }
+                    } catch { log('Failed: ' + entry.name); }
                 }
             }
         }
@@ -241,35 +241,28 @@
             emptyState.style.display = 'none';
             galleryEl.style.display = 'grid';
 
-            const categories = [...new Set(allImages.map(i => i.category))].sort();
-            categoryFiltersEl.innerHTML =
-                `<span class="filter-label">Kategori</span>` +
-                `<button class="filter-btn active" data-cat="all">All</button>` +
-                categories.map(c => {
-                    const count = allImages.filter(i => i.category === c).length;
-                    return `<button class="filter-btn" data-cat="${c}">${c} (${count})</button>`;
-                }).join('');
+            const cats = [...new Set(allImages.map(i => i.category))].sort();
+            filterCategoriesEl.innerHTML = `<span class="filter-label">Kategori</span>` +
+                `<button class="filter-btn active" data-cat="all">All (${allImages.length})</button>` +
+                cats.map(c => `<button class="filter-btn" data-cat="${c}">${c} (${allImages.filter(i => i.category === c).length})</button>`).join('');
 
-            const submittedCount = allImages.filter(i => getStatus(i.name) === 'submitted').length;
-            const biasaCount = allImages.length - submittedCount;
-            statusFiltersEl.innerHTML =
-                `<span class="filter-label">Status</span>` +
+            filterStatusEl.innerHTML = `<span class="filter-label">Status</span>` +
                 `<button class="filter-btn active" data-status="all">All</button>` +
-                `<button class="filter-btn" data-status="submitted">Submitted (${submittedCount})</button>` +
-                `<button class="filter-btn" data-status="biasa">Biasa (${biasaCount})</button>`;
+                `<button class="filter-btn" data-status="submitted">Submitted (${allImages.filter(i => getStatus(i.name) === 'submitted').length})</button>` +
+                `<button class="filter-btn" data-status="draft">Draft (${allImages.filter(i => getStatus(i.name) === 'draft').length})</button>`;
 
-            categoryFiltersEl.querySelectorAll('.filter-btn').forEach(btn => {
+            filterCategoriesEl.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    categoryFiltersEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    filterCategoriesEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     currentCategory = btn.dataset.cat;
                     renderGallery();
                 });
             });
 
-            statusFiltersEl.querySelectorAll('.filter-btn').forEach(btn => {
+            filterStatusEl.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    statusFiltersEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    filterStatusEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     currentStatus = btn.dataset.status;
                     renderGallery();
@@ -280,14 +273,11 @@
         }
 
         function renderGallery() {
-            let filtered = allImages;
-
-            if (currentCategory !== 'all') {
-                filtered = filtered.filter(i => i.category === currentCategory);
-            }
-            if (currentStatus !== 'all') {
-                filtered = filtered.filter(i => getStatus(i.name) === currentStatus);
-            }
+            let filtered = allImages.filter(img => {
+                const matchCat = currentCategory === 'all' || img.category === currentCategory;
+                const matchStatus = currentStatus === 'all' || getStatus(img.name) === currentStatus;
+                return matchCat && matchStatus;
+            });
 
             filtered.sort((a, b) => {
                 const sa = getStatus(a.name) === 'submitted' ? 0 : 1;
@@ -296,18 +286,20 @@
                 return a.name.localeCompare(b.name);
             });
 
-            const sc = filtered.filter(i => getStatus(i.name) === 'submitted').length;
-            statsEl.textContent = `Showing ${filtered.length} images | Submitted: ${sc} | Biasa: ${filtered.length - sc}`;
+            const sub = filtered.filter(i => getStatus(i.name) === 'submitted').length;
+            const dra = filtered.filter(i => getStatus(i.name) === 'draft').length;
+            statsEl.textContent = `Showing ${filtered.length} | Submitted: ${sub} | Draft: ${dra}`;
 
             galleryEl.innerHTML = filtered.map(img => {
-                const status = getStatus(img.name);
+                const st = getStatus(img.name);
                 return `
                 <div class="card">
-                    <div class="card-badge ${status}">${status}</div>
+                    <div class="card-badge ${st}"></div>
                     <img class="card-img" src="${img.path}" alt="${img.name}" loading="lazy">
                     <div class="card-info">
                         <div class="card-name">${img.name.replace(/_/g, ' ')}</div>
                         <div class="card-category">${img.category}</div>
+                        <div class="card-status-label ${st}">${st}</div>
                     </div>
                 </div>`;
             }).join('');
@@ -344,7 +336,6 @@
                 setStatus(currentModalImg.name, btn.dataset.status);
                 updateModalStatusBtns(btn.dataset.status);
                 renderGallery();
-                processImages();
             });
         });
 
