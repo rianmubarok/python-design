@@ -38,7 +38,7 @@ def parallel_stepped():
     fig, ax = setup_ax()
     n_lines = 25
     n_steps = 10
-    step_width = 100 / n_steps
+    step_width = 110 / n_steps
     for i in range(n_lines):
         y_base = -5 + i * (110 / n_lines)
         for j in range(n_steps):

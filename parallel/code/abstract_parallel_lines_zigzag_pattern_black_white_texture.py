@@ -38,7 +38,7 @@ def parallel_zigzag():
     fig, ax = setup_ax()
     n_lines = 30
     n_segments = 8
-    segment_width = 100 / n_segments
+    segment_width = 110 / n_segments
     for i in range(n_lines):
         y_base = -5 + i * (110 / n_lines)
         x_points = []

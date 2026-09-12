@@ -44,7 +44,7 @@ def parallel_density_spiral():
         max_dist = 55
         density_factor = 1 - dist / max_dist
         n_segments = int(5 + 15 * density_factor)
-        segment_length = 100 / n_segments
+        segment_length = 110 / n_segments
         for j in range(n_segments):
             x_start = -5 + j * segment_length
             x_end = x_start + segment_length * 0.6

@@ -80,7 +80,7 @@ def parallel_broken_dense():
     fig, ax = setup_ax()
     n_lines = 35
     n_segments = 15
-    segment_width = 100 / n_segments
+    segment_width = 110 / n_segments
     for i in range(n_lines):
         y = -5 + i * (110 / n_lines)
         for j in range(n_segments):
@@ -95,7 +95,7 @@ def parallel_broken_sparse():
     fig, ax = setup_ax()
     n_lines = 25
     n_segments = 6
-    segment_width = 100 / n_segments
+    segment_width = 110 / n_segments
     for i in range(n_lines):
         y = -5 + i * (110 / n_lines)
         for j in range(n_segments):
