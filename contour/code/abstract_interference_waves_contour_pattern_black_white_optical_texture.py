@@ -8,9 +8,9 @@ DPI = 300
 SEED = 42
 DATE = datetime.now().strftime("%d%m%Y")
 
-PNG_DIR = Path("output/png")
+JPG_DIR = Path("output/jpg")
 SVG_DIR = Path("output/svg")
-PNG_DIR.mkdir(parents=True, exist_ok=True)
+JPG_DIR.mkdir(parents=True, exist_ok=True)
 SVG_DIR.mkdir(parents=True, exist_ok=True)
 
 np.random.seed(SEED)
@@ -28,12 +28,12 @@ def setup_ax():
 
 
 def save(fig, name):
-    png_path = PNG_DIR / f"{name}_{DATE}.png"
+    jpg_path = JPG_DIR / f"{name}_{DATE}.jpg"
     svg_path = SVG_DIR / f"{name}_{DATE}.svg"
-    fig.savefig(png_path, dpi=DPI, pad_inches=0, facecolor="white")
+    fig.savefig(jpg_path, dpi=DPI, pad_inches=0, facecolor="white")
     fig.savefig(svg_path, format="svg", pad_inches=0, facecolor="white")
     plt.close(fig)
-    print(f"Tersimpan: {png_path} | {svg_path}")
+    print(f"Tersimpan: {jpg_path} | {svg_path}")
 def interference_waves():
     fig, ax = setup_ax()
     x = np.linspace(-5, 105, 500)

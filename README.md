@@ -6,7 +6,7 @@
 - Rasio: 1:1 (Persegi)
 - Resolusi: 4000 x 4000 px
 - DPI: 300
-- Format: PNG + SVG
+- Format: JPG + SVG
 - Suffix tanggal otomatis: `_DDMMYYYY` (contoh: `_12092026`)
 
 ### Struktur Folder
@@ -16,7 +16,7 @@ python-design/
 │   ├── code/
 │   │   └── abstract_parallel_lines_*.py
 │   └── output/
-│       ├── png/
+│       ├── jpg/
 │       └── svg/
 ├── waves/
 │   ├── code/
@@ -37,13 +37,13 @@ python-design/
 1. Masuk folder kategori → `code/` (misal `parallel/code/`)
 2. Buat file .py baru dengan nama full keyword mikrostok
 3. Jalankan script dari folder `code/`
-4. Output otomatis masuk ke `../output/png/` dan `../output/svg/`
+4. Output otomatis masuk ke `../output/jpg/` dan `../output/svg/`
 5. Tanggal otomatis ditambahkan ke nama file output
 
 ### Penamaan File
 - Format: `abstract_[deskripsi_pola]_[elemen]_[gaya]_[warna]_[kegunaan].py`
 - Contoh: `abstract_parallel_lines_random_thickness_pattern_black_white_texture.py`
-- Output: `abstract_parallel_lines_random_thickness_pattern_black_white_texture_12092026.png`
+- Output: `abstract_parallel_lines_random_thickness_pattern_black_white_texture_12092026.jpg`
 
 ### Keyword Wajib
 - `abstract` — deskripsi gaya
