@@ -153,7 +153,7 @@
             const map = getStatusMap();
             let changed = false;
             for (const name of list) {
-                if (!map[name]) { map[name] = 'submitted'; changed = true; }
+                if (map[name] !== 'submitted') { map[name] = 'submitted'; changed = true; }
             }
             if (changed) localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
         }
