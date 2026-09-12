@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nirmana Pattern Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+            padding: 20px 40px;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid #444;
+            background: transparent;
+            color: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover {
+            border-color: #888;
+            background: #2a2a2a;
+        }
+
+        .filter-btn.active {
+            background: #fff;
+            color: #1a1a1a;
+            border-color: #fff;
+        }
+
+        .stats {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 30px 40px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: #2a2a2a;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+        }
+
+        .card-img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            cursor: pointer;
+            background: #333;
+        }
+
+        .card-info {
+            padding: 15px;
+        }
+
+        .card-name {
+            font-size: 0.9rem;
+            color: #fff;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .card-batch {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal img {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .modal-close {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            font-size: 2rem;
+            color: #fff;
+            cursor: pointer;
+            z-index: 1001;
+            background: none;
+            border: none;
+        }
+
+        .modal-info {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 15px 25px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .modal-name {
+            font-size: 0.9rem;
+            color: #fff;
+        }
+
+        .modal-size {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Nirmana Pattern Viewer</h1>
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">All (38)</button>
+            <button class="filter-btn" data-filter="batch_01_parallel">Parallel (3)</button>
+            <button class="filter-btn" data-filter="batch_02_waves">Waves (5)</button>
+            <button class="filter-btn" data-filter="batch_03_radial">Radial (5)</button>
+            <button class="filter-btn" data-filter="batch_04_grid">Grid (8)</button>
+            <button class="filter-btn" data-filter="batch_05_contour">Contour (5)</button>
+            <button class="filter-btn" data-filter="batch_06_spiral">Spiral (2)</button>
+            <button class="filter-btn" data-filter="batch_07_optical">Optical (3)</button>
+            <button class="filter-btn" data-filter="batch_08_geometric">Geometric (4)</button>
+            <button class="filter-btn" data-filter="batch_09_organic">Organic (2)</button>
+            <button class="filter-btn" data-filter="batch_10_dynamic">Dynamic (1)</button>
+        </div>
+        <div class="stats">Showing <span id="count">38</span> patterns • 4000×4000px • 300 DPI</div>
+    </div>
+
+    <div class="gallery" id="gallery"></div>
+
+    <div class="modal" id="modal">
+        <button class="modal-close" id="modalClose">&times;</button>
+        <img id="modalImg" src="" alt="">
+        <div class="modal-info">
+            <div class="modal-name" id="modalName"></div>
+            <div class="modal-size">4000 × 4000 px • 300 DPI • PNG</div>
+        </div>
+    </div>
+
+    <script>
+        const patterns = [
+            { name: "abstract_parallel_lines_pattern_black_white_texture", path: "output/batch_01_parallel/png/abstract_parallel_lines_pattern_black_white_texture.png", batch: "batch_01_parallel" },
+            { name: "density_gradient_lines_pattern_abstract_minimalist", path: "output/batch_01_parallel/png/density_gradient_lines_pattern_abstract_minimalist.png", batch: "batch_01_parallel" },
+            { name: "parallel_gradient_lines_pattern_abstract_thick_thin", path: "output/batch_01_parallel/png/parallel_gradient_lines_pattern_abstract_thick_thin.png", batch: "batch_01_parallel" },
+            { name: "curved_waves_lines_pattern_abstract_seamless", path: "output/batch_02_waves/png/curved_waves_lines_pattern_abstract_seamless.png", batch: "batch_02_waves" },
+            { name: "double_zigzag_wave_lines_pattern_mirror_abstract", path: "output/batch_02_waves/png/double_zigzag_wave_lines_pattern_mirror_abstract.png", batch: "batch_02_waves" },
+            { name: "optical_illusion_wave_lines_pattern_abstract_motion", path: "output/batch_02_waves/png/optical_illusion_wave_lines_pattern_abstract_motion.png", batch: "batch_02_waves" },
+            { name: "pulse_wave_lines_pattern_abstract_dynamic_motion", path: "output/batch_02_waves/png/pulse_wave_lines_pattern_abstract_dynamic_motion.png", batch: "batch_02_waves" },
+            { name: "zigzag_wave_lines_pattern_abstract_minimalist", path: "output/batch_02_waves/png/zigzag_wave_lines_pattern_abstract_minimalist.png", batch: "batch_02_waves" },
+            { name: "converging_lines_pattern_perspective_abstract", path: "output/batch_03_radial/png/converging_lines_pattern_perspective_abstract.png", batch: "batch_03_radial" },
+            { name: "mandala_circular_symmetric_pattern_abstract_spiritual", path: "output/batch_03_radial/png/mandala_circular_symmetric_pattern_abstract_spiritual.png", batch: "batch_03_radial" },
+            { name: "pinwheel_rotating_lines_pattern_abstract_radial", path: "output/batch_03_radial/png/pinwheel_rotating_lines_pattern_abstract_radial.png", batch: "batch_03_radial" },
+            { name: "radial_density_variation_lines_pattern_abstract", path: "output/batch_03_radial/png/radial_density_variation_lines_pattern_abstract.png", batch: "batch_03_radial" },
+            { name: "radial_lines_pattern_sunburst_abstract_design", path: "output/batch_03_radial/png/radial_lines_pattern_sunburst_abstract_design.png", batch: "batch_03_radial" },
+            { name: "crosshatch_gradient_density_pattern_abstract", path: "output/batch_04_grid/png/crosshatch_gradient_density_pattern_abstract.png", batch: "batch_04_grid" },
+            { name: "crosshatch_lines_pattern_abstract_texture_sketch", path: "output/batch_04_grid/png/crosshatch_lines_pattern_abstract_texture_sketch.png", batch: "batch_04_grid" },
+            { name: "crossing_diagonal_lines_pattern_geometric_texture", path: "output/batch_04_grid/png/crossing_diagonal_lines_pattern_geometric_texture.png", batch: "batch_04_grid" },
+            { name: "diamond_grid_lines_pattern_geometric_abstract", path: "output/batch_04_grid/png/diamond_grid_lines_pattern_geometric_abstract.png", batch: "batch_04_grid" },
+            { name: "hexagonal_grid_pattern_geometric_abstract", path: "output/batch_04_grid/png/hexagonal_grid_pattern_geometric_abstract.png", batch: "batch_04_grid" },
+            { name: "perspective_grid_vanishing_point_abstract_depth", path: "output/batch_04_grid/png/perspective_grid_vanishing_point_abstract_depth.png", batch: "batch_04_grid" },
+            { name: "spiral_grid_distortion_pattern_abstract_geometric", path: "output/batch_04_grid/png/spiral_grid_distortion_pattern_abstract_geometric.png", batch: "batch_04_grid" },
+            { name: "wavy_grid_distortion_pattern_abstract_seamless", path: "output/batch_04_grid/png/wavy_grid_distortion_pattern_abstract_seamless.png", batch: "batch_04_grid" },
+            { name: "contour_overlap_topographic_pattern_multi_peak", path: "output/batch_05_contour/png/contour_overlap_topographic_pattern_multi_peak.png", batch: "batch_05_contour" },
+            { name: "interference_waves_contour_pattern_abstract_optical", path: "output/batch_05_contour/png/interference_waves_contour_pattern_abstract_optical.png", batch: "batch_05_contour" },
+            { name: "topographic_contour_lines_pattern_abstract_texture", path: "output/batch_05_contour/png/topographic_contour_lines_pattern_abstract_texture.png", batch: "batch_05_contour" },
+            { name: "topographic_multi_peak_contour_lines_pattern", path: "output/batch_05_contour/png/topographic_multi_peak_contour_lines_pattern.png", batch: "batch_05_contour" },
+            { name: "wave_interference_grid_pattern_abstract_optical", path: "output/batch_05_contour/png/wave_interference_grid_pattern_abstract_optical.png", batch: "batch_05_contour" },
+            { name: "double_spiral_lines_pattern_symmetric_abstract", path: "output/batch_06_spiral/png/double_spiral_lines_pattern_symmetric_abstract.png", batch: "batch_06_spiral" },
+            { name: "spiral_lines_pattern_abstract_geometric_design", path: "output/batch_06_spiral/png/spiral_lines_pattern_abstract_geometric_design.png", batch: "batch_06_spiral" },
+            { name: "checkerboard_wave_distortion_pattern_optical", path: "output/batch_07_optical/png/checkerboard_wave_distortion_pattern_optical.png", batch: "batch_07_optical" },
+            { name: "moire_pattern_interference_lines_abstract_optical", path: "output/batch_07_optical/png/moire_pattern_interference_lines_abstract_optical.png", batch: "batch_07_optical" },
+            { name: "op_art_optical_illusion_checkerboard_pattern", path: "output/batch_07_optical/png/op_art_optical_illusion_checkerboard_pattern.png", batch: "batch_07_optical" },
+            { name: "herringbone_v_pattern_abstract_geometric_texture", path: "output/batch_08_geometric/png/herringbone_v_pattern_abstract_geometric_texture.png", batch: "batch_08_geometric" },
+            { name: "labyrinth_maze_pattern_abstract_geometric", path: "output/batch_08_geometric/png/labyrinth_maze_pattern_abstract_geometric.png", batch: "batch_08_geometric" },
+            { name: "nested_rotating_squares_pattern_abstract_geometric", path: "output/batch_08_geometric/png/nested_rotating_squares_pattern_abstract_geometric.png", batch: "batch_08_geometric" },
+            { name: "tessellation_triangle_pattern_geometric_abstract", path: "output/batch_08_geometric/png/tessellation_triangle_pattern_geometric_abstract.png", batch: "batch_08_geometric" },
+            { name: "flow_field_lines_pattern_organic_abstract", path: "output/batch_09_organic/png/flow_field_lines_pattern_organic_abstract.png", batch: "batch_09_organic" },
+            { name: "fractal_tree_branches_pattern_abstract_organic", path: "output/batch_09_organic/png/fractal_tree_branches_pattern_abstract_organic.png", batch: "batch_09_organic" },
+            { name: "sound_spectrum_bars_pattern_abstract_audio_visual", path: "output/batch_10_dynamic/png/sound_spectrum_bars_pattern_abstract_audio_visual.png", batch: "batch_10_dynamic" }
+        ];
+
+        const gallery = document.getElementById('gallery');
+        const modal = document.getElementById('modal');
+        const modalImg = document.getElementById('modalImg');
+        const modalName = document.getElementById('modalName');
+        const modalClose = document.getElementById('modalClose');
+        const countEl = document.getElementById('count');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+
+        function renderGallery(filter = 'all') {
+            gallery.innerHTML = '';
+            const filtered = filter === 'all' ? patterns : patterns.filter(p => p.batch === filter);
+            countEl.textContent = filtered.length;
+
+            filtered.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.batch = p.batch;
+                card.innerHTML = `
+                    <img class="card-img" src="${p.path}" alt="${p.name}" loading="lazy">
+                    <div class="card-info">
+                        <div class="card-name">${p.name.replace(/_/g, ' ')}</div>
+                        <div class="card-batch">${p.batch.replace(/_/g, ' ')}</div>
+                    </div>
+                `;
+                card.querySelector('.card-img').addEventListener('click', () => openModal(p));
+                gallery.appendChild(card);
+            });
+        }
+
+        function openModal(p) {
+            modalImg.src = p.path;
+            modalName.textContent = p.name.replace(/_/g, ' ');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        modalClose.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderGallery(btn.dataset.filter);
+            });
+        });
+
+        renderGallery();
+    </script>
+</body>
+</html>
