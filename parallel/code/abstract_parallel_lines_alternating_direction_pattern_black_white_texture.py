@@ -43,9 +43,9 @@ def parallel_alternating():
         y = -5 + i * 2.2
         lw = np.random.choice([2.0, 3.0, 4.0])
         if i % 2 == 0:
-            ax.plot([-5, 70], [y, y], color="black", linewidth=lw)
+            ax.plot([-5, 105], [y, y], color="black", linewidth=lw)
         else:
-            ax.plot([30, 105], [y, y], color="black", linewidth=lw)
+            ax.plot([-5, 105], [y, y], color="black", linewidth=lw)
 
     save(fig, "parallel_alternating")
 

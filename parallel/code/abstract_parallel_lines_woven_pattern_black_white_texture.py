@@ -40,7 +40,7 @@ def parallel_woven():
     gap = 100 / n_lines
     for i in range(n_lines):
         y = -5 + i * gap
-        x_start = -5 + (i % 3) * 10
+        x_start = -5
         segments = []
         x = x_start
         while x < 105:

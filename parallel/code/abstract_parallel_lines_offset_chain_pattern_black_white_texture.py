@@ -46,7 +46,7 @@ def abstract_parallel_lines_offset_chain_pattern_black_white_texture():
         while x < 105:
             x_end = min(x + seg_len, 105)
             lw = np.random.choice([2.0, 3.0])
-            ax.plot([x + offset, x_end + offset], [y, y], color="black", linewidth=lw)
+            ax.plot([-5, 105], [y, y], color="black", linewidth=lw)
             x = x_end + 5
             offset = -offset
     save(fig, "abstract_parallel_lines_offset_chain_pattern_black_white_texture")

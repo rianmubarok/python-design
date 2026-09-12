@@ -37,8 +37,8 @@ def save(fig, name):
 def parallel_mosaic():
     fig, ax = setup_ax()
     block_size = 10
-    for bx in range(0, 100, block_size):
-        for by in range(0, 100, block_size):
+    for bx in range(-5, 105, block_size):
+        for by in range(-5, 105, block_size):
             direction = ((bx // block_size) + (by // block_size)) % 2
             lw = 0.4 + 0.3 * np.sin(bx * 0.1 + by * 0.1)
             if direction == 0:
