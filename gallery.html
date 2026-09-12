@@ -52,7 +52,7 @@
 
     <div class="empty-state" id="emptyState">
         <h2>No images loaded</h2>
-        <p>Click "Open Folder" and select your project folder (e.g., python-design). The gallery will scan all subfolders for PNG images.</p>
+        <p>Click "Open Folder" and select your project folder (e.g., python-design). The gallery will scan all subfolders for JPG images.</p>
         <button class="folder-btn" id="openFolderEmpty">Open Folder</button>
     </div>
 
@@ -140,8 +140,8 @@
             for await (const entry of dirHandle.values()) {
                 if (entry.kind === 'directory') {
                     const newPath = path + '/' + entry.name;
-                    if (entry.name === 'png') {
-                        await scanPngFolder(entry, path);
+                    if (entry.name === 'jpg') {
+                        await scanJpgFolder(entry, path);
                     } else {
                         await scanRecursive(entry, newPath);
                     }
@@ -149,7 +149,7 @@
             }
         }
 
-        async function scanPngFolder(dirHandle, basePath) {
+        async function scanJpgFolder(dirHandle, basePath) {
             try {
                 const permission = await dirHandle.requestPermission({ mode: 'read' });
                 if (permission !== 'granted') return;
@@ -159,12 +159,12 @@
 
             const category = basePath.split('/').pop();
             for await (const entry of dirHandle.values()) {
-                if (entry.kind === 'file' && entry.name.endsWith('.png')) {
+                if (entry.kind === 'file' && entry.name.endsWith('.jpg')) {
                     try {
                         const file = await entry.getFile();
                         const url = URL.createObjectURL(file);
                         allImages.push({
-                            name: entry.name.replace('.png', ''),
+                            name: entry.name.replace('.jpg', ''),
                             path: url,
                             category: category,
                             size: file.size
@@ -179,12 +179,12 @@
         function handleFileInput(files) {
             allImages = [];
             for (const file of files) {
-                if (file.name.endsWith('.png')) {
+                if (file.name.endsWith('.jpg')) {
                     const parts = file.webkitRelativePath.split('/');
                     const catIdx = parts.findIndex(p => p === 'output');
                     const category = catIdx > 0 ? parts[catIdx - 1] : 'unknown';
                     allImages.push({
-                        name: file.name.replace('.png', ''),
+                        name: file.name.replace('.jpg', ''),
                         path: URL.createObjectURL(file),
                         category: category,
                         size: file.size
