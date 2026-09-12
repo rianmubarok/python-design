@@ -17,25 +17,46 @@
         .filter-btn { padding: 6px 14px; border: 1px solid #333; background: transparent; color: #888; border-radius: 16px; cursor: pointer; font-size: 0.8rem; }
         .filter-btn:hover { border-color: #555; color: #fff; }
         .filter-btn.active { background: #fff; color: #000; border-color: #fff; }
+        .filter-btn[data-filter="submitted"] { border-color: #22c55e; color: #22c55e; }
+        .filter-btn[data-filter="submitted"].active { background: #22c55e; color: #000; }
+        .filter-btn[data-filter="pending"] { border-color: #eab308; color: #eab308; }
+        .filter-btn[data-filter="pending"].active { background: #eab308; color: #000; }
+        .filter-btn[data-filter="draft"] { border-color: #666; color: #666; }
+        .filter-btn[data-filter="draft"].active { background: #666; color: #000; }
         .stats { margin-top: 10px; font-size: 0.8rem; color: #555; }
         .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; padding: 24px 30px; }
-        .card { background: #141414; border-radius: 8px; overflow: hidden; transition: transform 0.15s ease; }
+        .card { background: #141414; border-radius: 8px; overflow: hidden; transition: transform 0.15s ease; position: relative; }
         .card:hover { transform: translateY(-2px); }
+        .card-status { position: absolute; top: 8px; right: 8px; width: 10px; height: 10px; border-radius: 50%; z-index: 10; }
+        .card-status.submitted { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+        .card-status.pending { background: #eab308; box-shadow: 0 0 6px #eab308; }
+        .card-status.draft { background: #666; }
         .card-img { width: 100%; aspect-ratio: 1; object-fit: cover; cursor: pointer; background: #1a1a1a; }
         .card-info { padding: 12px; }
         .card-name { font-size: 0.8rem; color: #ccc; word-break: break-word; }
         .card-category { font-size: 0.7rem; color: #555; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .card-status-label { font-size: 0.65rem; margin-top: 6px; padding: 2px 8px; border-radius: 10px; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+        .card-status-label.submitted { background: #22c55e22; color: #22c55e; }
+        .card-status-label.pending { background: #eab30822; color: #eab308; }
+        .card-status-label.draft { background: #66666622; color: #666; }
         .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: calc(100vh - 200px); text-align: center; color: #444; }
         .empty-state h2 { font-size: 1.2rem; font-weight: 400; margin-bottom: 10px; color: #666; }
         .empty-state p { font-size: 0.85rem; margin-bottom: 20px; max-width: 400px; line-height: 1.5; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; }
         .modal.active { display: flex; }
-        .modal img { max-width: 90vw; max-height: 90vh; object-fit: contain; }
+        .modal img { max-width: 90vw; max-height: 85vh; object-fit: contain; }
         .modal-close { position: fixed; top: 20px; right: 24px; font-size: 1.5rem; color: #fff; cursor: pointer; z-index: 1001; background: rgba(0,0,0,0.5); border: none; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
         .modal-close:hover { background: rgba(255,255,255,0.2); }
         .modal-info { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); padding: 12px 20px; border-radius: 6px; text-align: center; }
         .modal-name { font-size: 0.85rem; color: #fff; }
         .modal-meta { font-size: 0.7rem; color: #666; margin-top: 4px; }
+        .modal-status-btns { display: flex; gap: 8px; margin-top: 10px; justify-content: center; }
+        .modal-status-btn { padding: 6px 14px; border: 1px solid #333; background: transparent; color: #888; border-radius: 16px; cursor: pointer; font-size: 0.75rem; transition: all 0.15s; }
+        .modal-status-btn:hover { border-color: #555; color: #fff; }
+        .modal-status-btn.active { font-weight: 500; }
+        .modal-status-btn[data-status="submitted"].active { background: #22c55e; color: #000; border-color: #22c55e; }
+        .modal-status-btn[data-status="pending"].active { background: #eab308; color: #000; border-color: #eab308; }
+        .modal-status-btn[data-status="draft"].active { background: #666; color: #000; border-color: #666; }
         .debug { position: fixed; bottom: 10px; right: 10px; font-size: 0.7rem; color: #333; font-family: monospace; }
     </style>
 </head>
@@ -64,6 +85,11 @@
         <div class="modal-info">
             <div class="modal-name" id="modalName"></div>
             <div class="modal-meta">4000 x 4000 px | 300 DPI</div>
+            <div class="modal-status-btns" id="modalStatusBtns">
+                <button class="modal-status-btn" data-status="submitted">Submitted</button>
+                <button class="modal-status-btn" data-status="pending">Pending</button>
+                <button class="modal-status-btn" data-status="draft">Draft</button>
+            </div>
         </div>
     </div>
 
@@ -72,6 +98,10 @@
     <script>
         let allImages = [];
         let currentFilter = 'all';
+        let currentModalImg = null;
+
+        const STORAGE_KEY = 'nirmana_gallery_status';
+        const SUBMITTED_KEY = 'nirmana_submitted_list';
 
         const openFolderBtn = document.getElementById('openFolder');
         const openFolderEmpty = document.getElementById('openFolderEmpty');
@@ -84,11 +114,50 @@
         const modalImg = document.getElementById('modalImg');
         const modalName = document.getElementById('modalName');
         const modalClose = document.getElementById('modalClose');
+        const modalStatusBtns = document.getElementById('modalStatusBtns');
         const debugEl = document.getElementById('debug');
 
         function log(msg) {
             console.log(msg);
             debugEl.textContent = msg;
+        }
+
+        function getStatusMap() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+            } catch { return {}; }
+        }
+
+        function setStatus(name, status) {
+            const map = getStatusMap();
+            map[name] = status;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+        }
+
+        function getStatus(name) {
+            return getStatusMap()[name] || 'draft';
+        }
+
+        function initSubmittedList() {
+            const list = [
+                'parallel_gradient_thickness', 'parallel_gradient_angular', 'parallel_gradient_per_group',
+                'parallel_density_variation', 'parallel_density_circle', 'parallel_density_shape_circle',
+                'parallel_random_thickness', 'parallel_broken_segments', 'parallel_dashed',
+                'parallel_staggered_offset', 'parallel_rhythmic_spacing', 'parallel_wave_modulated_thickness',
+                'parallel_curved_smooth', 'parallel_clustered_grouping', 'parallel_concentric_arc',
+                'parallel_converging_fan', 'parallel_crossing_x', 'parallel_symmetric_mirror',
+                'parallel_tapered', 'parallel_varying_length', 'parallel_alternating_direction',
+                'parallel_offset_chain', 'parallel_nested_rectangle', 'parallel_organic_flow', 'parallel_multi_layer'
+            ];
+            const map = getStatusMap();
+            let changed = false;
+            for (const name of list) {
+                if (!map[name]) {
+                    map[name] = 'submitted';
+                    changed = true;
+                }
+            }
+            if (changed) localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
         }
 
         async function openFolder() {
@@ -133,9 +202,7 @@
                     log('Permission denied: ' + path);
                     return;
                 }
-            } catch (e) {
-                return;
-            }
+            } catch (e) { return; }
 
             for await (const entry of dirHandle.values()) {
                 if (entry.kind === 'directory') {
@@ -153,9 +220,7 @@
             try {
                 const permission = await dirHandle.requestPermission({ mode: 'read' });
                 if (permission !== 'granted') return;
-            } catch (e) {
-                return;
-            }
+            } catch (e) { return; }
 
             const category = basePath.split('/').pop();
             for await (const entry of dirHandle.values()) {
@@ -194,6 +259,8 @@
             processImages();
         }
 
+        const STATUS_ORDER = { submitted: 0, pending: 1, draft: 2 };
+
         function processImages() {
             if (allImages.length === 0) {
                 emptyState.style.display = 'flex';
@@ -204,12 +271,14 @@
             emptyState.style.display = 'none';
             galleryEl.style.display = 'grid';
 
-            const categories = [...new Set(allImages.map(i => i.category))].sort();
-            filtersEl.innerHTML = `<button class="filter-btn active" data-filter="all">All (${allImages.length})</button>` +
-                categories.map(c => {
-                    const count = allImages.filter(i => i.category === c).length;
-                    return `<button class="filter-btn" data-filter="${c}">${c} (${count})</button>`;
-                }).join('');
+            const counts = { all: allImages.length, submitted: 0, pending: 0, draft: 0 };
+            allImages.forEach(img => { counts[getStatus(img.name)]++; });
+
+            filtersEl.innerHTML =
+                `<button class="filter-btn active" data-filter="all">All (${counts.all})</button>` +
+                `<button class="filter-btn" data-filter="submitted">Submitted (${counts.submitted})</button>` +
+                `<button class="filter-btn" data-filter="pending">Pending (${counts.pending})</button>` +
+                `<button class="filter-btn" data-filter="draft">Draft (${counts.draft})</button>`;
 
             filtersEl.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -224,18 +293,34 @@
         }
 
         function renderGallery() {
-            const filtered = currentFilter === 'all' ? allImages : allImages.filter(i => i.category === currentFilter);
-            statsEl.textContent = `Showing ${filtered.length} images`;
+            let filtered = currentFilter === 'all'
+                ? [...allImages]
+                : allImages.filter(i => i.category === currentFilter || getStatus(i.name) === currentFilter);
 
-            galleryEl.innerHTML = filtered.map(img => `
+            filtered.sort((a, b) => {
+                const sa = STATUS_ORDER[getStatus(a.name)];
+                const sb = STATUS_ORDER[getStatus(b.name)];
+                if (sa !== sb) return sa - sb;
+                return a.name.localeCompare(b.name);
+            });
+
+            const statusCounts = { submitted: 0, pending: 0, draft: 0 };
+            filtered.forEach(img => { statusCounts[getStatus(img.name)]++; });
+            statsEl.textContent = `Showing ${filtered.length} images | S:${statusCounts.submitted} P:${statusCounts.pending} D:${statusCounts.draft}`;
+
+            galleryEl.innerHTML = filtered.map(img => {
+                const status = getStatus(img.name);
+                return `
                 <div class="card">
+                    <div class="card-status ${status}"></div>
                     <img class="card-img" src="${img.path}" alt="${img.name}" loading="lazy">
                     <div class="card-info">
                         <div class="card-name">${img.name.replace(/_/g, ' ')}</div>
                         <div class="card-category">${img.category}</div>
+                        <div class="card-status-label ${status}">${status}</div>
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
 
             galleryEl.querySelectorAll('.card-img').forEach((el, i) => {
                 el.addEventListener('click', () => openModal(filtered[i]));
@@ -243,16 +328,35 @@
         }
 
         function openModal(img) {
+            currentModalImg = img;
             modalImg.src = img.path;
             modalName.textContent = img.name.replace(/_/g, ' ');
+            updateModalStatusBtns(getStatus(img.name));
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+        }
+
+        function updateModalStatusBtns(activeStatus) {
+            modalStatusBtns.querySelectorAll('.modal-status-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.status === activeStatus);
+            });
         }
 
         function closeModal() {
             modal.classList.remove('active');
             document.body.style.overflow = '';
+            currentModalImg = null;
         }
+
+        modalStatusBtns.querySelectorAll('.modal-status-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!currentModalImg) return;
+                const newStatus = btn.dataset.status;
+                setStatus(currentModalImg.name, newStatus);
+                updateModalStatusBtns(newStatus);
+                renderGallery();
+            });
+        });
 
         modalClose.addEventListener('click', closeModal);
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
@@ -260,6 +364,8 @@
 
         openFolderBtn.addEventListener('click', openFolder);
         openFolderEmpty.addEventListener('click', openFolder);
+
+        initSubmittedList();
     </script>
 </body>
 </html>
