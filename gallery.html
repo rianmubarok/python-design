@@ -196,28 +196,44 @@
             for await (const entry of dirHandle.values()) {
                 if (entry.kind === 'directory') {
                     const newPath = path + '/' + entry.name;
-                    if (entry.name === 'jpg') await scanJpgFolder(entry, path);
+                    if (entry.name === 'jpg') await scanJpgFolder(entry, path, false);
+                    else if (entry.name === 'submitted') await scanSubmittedFolder(entry, path);
                     else await scanRecursive(entry, newPath);
                 }
             }
         }
 
-        async function scanJpgFolder(dirHandle, basePath) {
+        async function scanSubmittedFolder(dirHandle, basePath) {
             try {
                 const p = await dirHandle.requestPermission({ mode: 'read' });
                 if (p !== 'granted') return;
             } catch { return; }
             const category = basePath.split('/').pop();
             for await (const entry of dirHandle.values()) {
+                if (entry.kind === 'directory' && entry.name === 'jpg') {
+                    await scanJpgFolder(entry, category, true);
+                }
+            }
+        }
+
+        async function scanJpgFolder(dirHandle, category, isSubmitted) {
+            try {
+                const p = await dirHandle.requestPermission({ mode: 'read' });
+                if (p !== 'granted') return;
+            } catch { return; }
+            for await (const entry of dirHandle.values()) {
                 if (entry.kind === 'file' && entry.name.endsWith('.jpg')) {
                     try {
                         const file = await entry.getFile();
+                        const name = entry.name.replace('.jpg', '');
                         allImages.push({
-                            name: entry.name.replace('.jpg', ''),
+                            name: name,
                             path: URL.createObjectURL(file),
                             category: category,
-                            size: file.size
+                            size: file.size,
+                            isSubmitted: isSubmitted
                         });
+                        if (isSubmitted) setStatus(name, 'submitted');
                     } catch { log('Failed: ' + entry.name); }
                 }
             }
@@ -229,12 +245,15 @@
                 if (file.name.endsWith('.jpg')) {
                     const parts = file.webkitRelativePath.split('/');
                     const catIdx = parts.findIndex(p => p === 'output');
+                    const isSubmitted = parts.includes('submitted');
                     allImages.push({
                         name: file.name.replace('.jpg', ''),
                         path: URL.createObjectURL(file),
                         category: catIdx > 0 ? parts[catIdx - 1] : 'unknown',
-                        size: file.size
+                        size: file.size,
+                        isSubmitted: isSubmitted
                     });
+                    if (isSubmitted) setStatus(file.name.replace('.jpg', ''), 'submitted');
                 }
             }
             processImages();
