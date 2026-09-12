@@ -123,12 +123,17 @@
 
         function setStatus(name, status) {
             const map = getStatusMap();
-            map[name] = status;
+            const base = name.replace(/_\d{8}$/, '');
+            map[base] = status;
             localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
         }
 
         function getStatus(name) {
-            return getStatusMap()[name] || 'draft';
+            const map = getStatusMap();
+            if (map[name]) return map[name];
+            const base = name.replace(/_\d{8}$/, '');
+            if (map[base]) return map[base];
+            return 'draft';
         }
 
         function initSubmittedList() {
