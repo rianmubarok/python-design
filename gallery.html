@@ -137,25 +137,7 @@
         }
 
         function initSubmittedList() {
-            const list = [
-                'parallel_gradient', 'abstract_parallel_lines_gradient_angular_pattern_black_white_texture',
-                'parallel_gradient_group', 'parallel_density',
-                'abstract_parallel_lines_density_circle_pattern_black_white_texture', 'parallel_density_shape',
-                'parallel_random', 'parallel_broken', 'abstract_parallel_lines_dashed_pattern_black_white_texture',
-                'parallel_staggered', 'parallel_rhythmic', 'parallel_wave_modulated',
-                'parallel_curved', 'parallel_clustered', 'abstract_parallel_lines_concentric_arc_pattern_black_white_texture',
-                'abstract_parallel_lines_converging_fan_pattern_black_white_texture', 'abstract_parallel_lines_crossing_x_pattern_black_white_texture',
-                'abstract_parallel_lines_symmetric_mirror_pattern_black_white_texture', 'abstract_parallel_lines_tapered_pattern_black_white_texture',
-                'parallel_varying_length', 'parallel_alternating', 'abstract_parallel_lines_offset_chain_pattern_black_white_texture',
-                'abstract_parallel_lines_nested_rectangle_pattern_black_white_texture', 'abstract_parallel_lines_organic_flow_pattern_black_white_texture',
-                'abstract_parallel_lines_multi_layer_pattern_black_white_texture'
-            ];
-            const map = getStatusMap();
-            let changed = false;
-            for (const name of list) {
-                if (map[name] !== 'submitted') { map[name] = 'submitted'; changed = true; }
-            }
-            if (changed) localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+            // Dinamis mengikuti struktur folder submitted/ fisik
         }
 
         async function openFolder() {
@@ -233,7 +215,7 @@
                             size: file.size,
                             isSubmitted: isSubmitted
                         });
-                        if (isSubmitted) setStatus(name, 'submitted');
+                        setStatus(name, isSubmitted ? 'submitted' : 'draft');
                     } catch { log('Failed: ' + entry.name); }
                 }
             }
@@ -246,14 +228,15 @@
                     const parts = file.webkitRelativePath.split('/');
                     const catIdx = parts.findIndex(p => p === 'output');
                     const isSubmitted = parts.includes('submitted');
+                    const name = file.name.replace('.jpg', '');
                     allImages.push({
-                        name: file.name.replace('.jpg', ''),
+                        name: name,
                         path: URL.createObjectURL(file),
                         category: catIdx > 0 ? parts[catIdx - 1] : 'unknown',
                         size: file.size,
                         isSubmitted: isSubmitted
                     });
-                    if (isSubmitted) setStatus(file.name.replace('.jpg', ''), 'submitted');
+                    setStatus(name, isSubmitted ? 'submitted' : 'draft');
                 }
             }
             processImages();
