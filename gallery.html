@@ -269,40 +269,38 @@
             emptyState.style.display = 'none';
             galleryEl.style.display = 'grid';
 
-            const cats = [...new Set(allImages.map(i => i.category))].sort();
-            filterCategoriesEl.innerHTML = `<span class="filter-label">Kategori</span>` +
-                `<button class="filter-btn active" data-cat="all">All (${allImages.length})</button>` +
-                cats.map(c => `<button class="filter-btn" data-cat="${c}">${c} (${allImages.filter(i => i.category === c).length})</button>`).join('');
-
-            const count = s => allImages.filter(i => getStatus(i.name) === s).length;
-            filterStatusEl.innerHTML = `<span class="filter-label">Status</span>` +
-                `<button class="filter-btn active" data-status="all">All</button>` +
-                `<button class="filter-btn" data-status="real">Real (${count('real')})</button>` +
-                `<button class="filter-btn" data-status="ai">AI (${count('ai')})</button>` +
-                `<button class="filter-btn" data-status="draft">Draft (${count('draft')})</button>`;
-
-            filterCategoriesEl.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    filterCategoriesEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentCategory = btn.dataset.cat;
-                    renderGallery();
-                });
-            });
-
-            filterStatusEl.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    filterStatusEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentStatus = btn.dataset.status;
-                    renderGallery();
-                });
-            });
-
             renderGallery();
         }
 
+        function renderFilters() {
+            const catMatch = i => currentStatus === 'all' || getStatus(i.name) === currentStatus;
+            const cats = [...new Set(allImages.map(i => i.category))].sort();
+            filterCategoriesEl.innerHTML = `<span class="filter-label">Kategori</span>` +
+                `<button class="filter-btn${currentCategory === 'all' ? ' active' : ''}" data-cat="all">All (${allImages.filter(catMatch).length})</button>` +
+                cats.map(c => {
+                    const n = allImages.filter(i => i.category === c && catMatch(i)).length;
+                    return `<button class="filter-btn${currentCategory === c ? ' active' : ''}" data-cat="${c}">${c} (${n})</button>`;
+                }).join('');
+
+            const statusMatch = i => currentCategory === 'all' || i.category === currentCategory;
+            const count = s => allImages.filter(i => statusMatch(i) && getStatus(i.name) === s).length;
+            filterStatusEl.innerHTML = `<span class="filter-label">Status</span>` +
+                `<button class="filter-btn${currentStatus === 'all' ? ' active' : ''}" data-status="all">All (${allImages.filter(statusMatch).length})</button>` +
+                `<button class="filter-btn${currentStatus === 'real' ? ' active' : ''}" data-status="real">Real (${count('real')})</button>` +
+                `<button class="filter-btn${currentStatus === 'ai' ? ' active' : ''}" data-status="ai">AI (${count('ai')})</button>` +
+                `<button class="filter-btn${currentStatus === 'draft' ? ' active' : ''}" data-status="draft">Draft (${count('draft')})</button>`;
+
+            filterCategoriesEl.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => { currentCategory = btn.dataset.cat; renderGallery(); });
+            });
+
+            filterStatusEl.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => { currentStatus = btn.dataset.status; renderGallery(); });
+            });
+        }
+
         function renderGallery() {
+            renderFilters();
             let filtered = allImages.filter(img => {
                 const matchCat = currentCategory === 'all' || img.category === currentCategory;
                 const matchStatus = currentStatus === 'all' || getStatus(img.name) === currentStatus;
