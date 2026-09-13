@@ -124,6 +124,16 @@
             return null;
         }
 
+        // Category = the folder right before output/ai-detected/real-detected.
+        // Works whether or not the path starts with the selected root folder
+        // (webkitRelativePath includes the root, the directory picker does not).
+        function categoryFromPath(path) {
+            const parts = path.split('/').filter(Boolean);
+            const idx = parts.findIndex(p => p === 'output' || p === 'ai-detected' || p === 'real-detected');
+            if (idx > 0) return parts[idx - 1];
+            return parts[0] || 'unknown';
+        }
+
         function getStatus(name) {
             const base = baseName(name);
             if (detectedSets.real.has(base)) return 'real';
@@ -187,7 +197,7 @@
                     if (entry.kind !== 'directory') continue;
                     if (entry.name.startsWith('.')) continue;
                     if (entry.name === 'jpg') {
-                        const category = path.split('/')[0];
+                        const category = categoryFromPath(path);
                         const status = statusFromPath(path);
                         await scanJpgFolder(entry, category, status, status === null);
                     } else if (entry.name === 'svg' || entry.name === 'code') {
@@ -232,8 +242,7 @@
             for (const file of files) {
                 if (!file.name.endsWith('.jpg')) continue;
                 const rel = file.webkitRelativePath;
-                const parts = rel.split('/');
-                const category = parts[0] || 'unknown';
+                const category = categoryFromPath(rel);
                 const status = statusFromPath(rel);
                 const name = file.name.replace('.jpg', '');
                 const base = baseName(name);
