@@ -1,0 +1,59 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from pathlib import Path
+from datetime import datetime
+
+SIZE = 4000
+DPI = 300
+SEED = 42
+DATE = datetime.now().strftime("%d%m%Y")
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+OUTPUT_DIR = SCRIPT_DIR.parent / "output"
+JPG_DIR = OUTPUT_DIR / "jpg"
+SVG_DIR = OUTPUT_DIR / "svg"
+JPG_DIR.mkdir(parents=True, exist_ok=True)
+SVG_DIR.mkdir(parents=True, exist_ok=True)
+
+np.random.seed(SEED)
+
+
+def setup_ax():
+    fig, ax = plt.subplots(figsize=(SIZE / DPI, SIZE / DPI), dpi=DPI)
+    fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    ax.set_facecolor("white")
+    ax.set_xlim(-5, 105)
+    ax.set_ylim(-5, 105)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    return fig, ax
+
+
+def save(fig, name):
+    jpg_path = JPG_DIR / f"{name} {DATE}.jpg"
+    svg_path = SVG_DIR / f"{name} {DATE}.svg"
+    fig.savefig(jpg_path, dpi=DPI, pad_inches=0, facecolor="white")
+    fig.savefig(svg_path, format="svg", pad_inches=0, facecolor="white")
+    plt.close(fig)
+    print(f"Tersimpan: {jpg_path} | {svg_path}")
+
+
+def abstract_parallel_lines_wave_modulated_thickness_pattern_black_white_texture():
+    """Garis paralel dengan ketebalan modulasi gelombang"""
+    fig, ax = setup_ax()
+
+    n_lines = 50
+    x = np.linspace(-5, 105, 100)
+    for i in range(n_lines):
+        y = -5 + i * 2.2
+        wave = np.sin(x * 0.12 + i * 0.5)
+        segments = np.array([[x[j], y, x[j+1], y] for j in range(len(x)-1)])
+        from matplotlib.collections import LineCollection
+        lc = LineCollection(segments.reshape(-1, 2, 2), linewidths=1.5 + wave[:-1] * 1.0, color='black')
+        ax.add_collection(lc)
+
+    save(fig, "abstract parallel lines wave modulated thickness pattern black white texture")
+
+
+if __name__ == "__main__":
+    abstract_parallel_lines_wave_modulated_thickness_pattern_black_white_texture()

@@ -18,8 +18,10 @@
         .filter-btn { padding: 5px 12px; border: 1px solid #333; background: transparent; color: #888; border-radius: 14px; cursor: pointer; font-size: 0.75rem; }
         .filter-btn:hover { border-color: #555; color: #fff; }
         .filter-btn.active { background: #fff; color: #000; border-color: #fff; }
-        .filter-btn[data-status="submitted"] { border-color: #22c55e; color: #22c55e; }
-        .filter-btn[data-status="submitted"].active { background: #22c55e; color: #000; border-color: #22c55e; }
+        .filter-btn[data-status="real"] { border-color: #22c55e; color: #22c55e; }
+        .filter-btn[data-status="real"].active { background: #22c55e; color: #000; border-color: #22c55e; }
+        .filter-btn[data-status="ai"] { border-color: #f97316; color: #f97316; }
+        .filter-btn[data-status="ai"].active { background: #f97316; color: #000; border-color: #f97316; }
         .filter-btn[data-status="draft"] { border-color: #666; color: #666; }
         .filter-btn[data-status="draft"].active { background: #666; color: #000; border-color: #666; }
         .stats { margin-top: 8px; font-size: 0.8rem; color: #555; }
@@ -27,14 +29,16 @@
         .card { background: #141414; border-radius: 8px; overflow: hidden; transition: transform 0.15s ease; position: relative; }
         .card:hover { transform: translateY(-2px); }
         .card-badge { position: absolute; top: 8px; right: 8px; width: 10px; height: 10px; border-radius: 50%; z-index: 10; }
-        .card-badge.submitted { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+        .card-badge.real { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+        .card-badge.ai { background: #f97316; box-shadow: 0 0 6px #f97316; }
         .card-badge.draft { background: #666; }
         .card-img { width: 100%; aspect-ratio: 1; object-fit: cover; cursor: pointer; background: #1a1a1a; }
         .card-info { padding: 12px; }
         .card-name { font-size: 0.8rem; color: #ccc; word-break: break-word; }
         .card-category { font-size: 0.7rem; color: #555; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
         .card-status-label { font-size: 0.65rem; margin-top: 6px; padding: 2px 8px; border-radius: 10px; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
-        .card-status-label.submitted { background: #22c55e22; color: #22c55e; }
+        .card-status-label.real { background: #22c55e22; color: #22c55e; }
+        .card-status-label.ai { background: #f9731622; color: #f97316; }
         .card-status-label.draft { background: #66666622; color: #666; }
         .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: calc(100vh - 200px); text-align: center; color: #444; }
         .empty-state h2 { font-size: 1.2rem; font-weight: 400; margin-bottom: 10px; color: #666; }
@@ -47,12 +51,10 @@
         .modal-info { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); padding: 12px 20px; border-radius: 6px; text-align: center; }
         .modal-name { font-size: 0.85rem; color: #fff; }
         .modal-meta { font-size: 0.7rem; color: #666; margin-top: 4px; }
-        .modal-status-btns { display: flex; gap: 8px; margin-top: 10px; justify-content: center; }
-        .modal-status-btn { padding: 6px 14px; border: 1px solid #333; background: transparent; color: #888; border-radius: 16px; cursor: pointer; font-size: 0.75rem; transition: all 0.15s; }
-        .modal-status-btn:hover { border-color: #555; color: #fff; }
-        .modal-status-btn.active { font-weight: 500; }
-        .modal-status-btn[data-status="submitted"].active { background: #22c55e; color: #000; border-color: #22c55e; }
-        .modal-status-btn[data-status="draft"].active { background: #666; color: #000; border-color: #666; }
+        .modal-status-label { font-size: 0.7rem; margin-top: 8px; padding: 3px 12px; border-radius: 12px; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+        .modal-status-label.real { background: #22c55e22; color: #22c55e; }
+        .modal-status-label.ai { background: #f9731622; color: #f97316; }
+        .modal-status-label.draft { background: #66666622; color: #666; }
         .debug { position: fixed; bottom: 10px; right: 10px; font-size: 0.7rem; color: #333; font-family: monospace; }
     </style>
 </head>
@@ -70,7 +72,7 @@
 
     <div class="empty-state" id="emptyState">
         <h2>No images loaded</h2>
-        <p>Click "Open Folder" and select your project folder (e.g., python-design). The gallery will scan all subfolders for JPG images.</p>
+        <p>Click "Open Folder" and select your project folder (e.g., python-design). The gallery reads the master list from each category's output/jpg and gets the status from ai-detected/jpg and real-detected/jpg.</p>
         <button class="folder-btn" id="openFolderEmpty">Open Folder</button>
     </div>
 
@@ -82,10 +84,7 @@
         <div class="modal-info">
             <div class="modal-name" id="modalName"></div>
             <div class="modal-meta">4000 x 4000 px | 300 DPI</div>
-            <div class="modal-status-btns" id="modalStatusBtns">
-                <button class="modal-status-btn" data-status="submitted">Submitted</button>
-                <button class="modal-status-btn" data-status="draft">Draft</button>
-            </div>
+            <div class="modal-status-label" id="modalStatus"></div>
         </div>
     </div>
 
@@ -95,9 +94,9 @@
         let allImages = [];
         let currentCategory = 'all';
         let currentStatus = 'all';
-        let currentModalImg = null;
 
-        const STORAGE_KEY = 'nirmana_gallery_status';
+        // Status comes directly from the detected folders (read-only).
+        const detectedSets = { real: new Set(), ai: new Set() };
 
         const openFolderBtn = document.getElementById('openFolder');
         const openFolderEmpty = document.getElementById('openFolderEmpty');
@@ -110,34 +109,26 @@
         const modal = document.getElementById('modal');
         const modalImg = document.getElementById('modalImg');
         const modalName = document.getElementById('modalName');
+        const modalStatus = document.getElementById('modalStatus');
         const modalClose = document.getElementById('modalClose');
-        const modalStatusBtns = document.getElementById('modalStatusBtns');
         const debugEl = document.getElementById('debug');
 
         function log(msg) { console.log(msg); debugEl.textContent = msg; }
 
-        function getStatusMap() {
-            try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
-            catch { return {}; }
-        }
+        // Strip a trailing date suffix, supporting both "_12092026" and " 12092026".
+        function baseName(name) { return name.replace(/[_\s]\d{8}$/, ''); }
 
-        function setStatus(name, status) {
-            const map = getStatusMap();
-            const base = name.replace(/_\d{8}$/, '');
-            map[base] = status;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+        function statusFromPath(path) {
+            if (path.includes('ai-detected')) return 'ai';
+            if (path.includes('real-detected')) return 'real';
+            return null;
         }
 
         function getStatus(name) {
-            const map = getStatusMap();
-            if (map[name]) return map[name];
-            const base = name.replace(/_\d{8}$/, '');
-            if (map[base]) return map[base];
+            const base = baseName(name);
+            if (detectedSets.real.has(base)) return 'real';
+            if (detectedSets.ai.has(base)) return 'ai';
             return 'draft';
-        }
-
-        function initSubmittedList() {
-            // Dinamis mengikuti struktur folder submitted/ fisik
         }
 
         async function openFolder() {
@@ -147,6 +138,8 @@
                     folderPathEl.textContent = dirHandle.name;
                     log('Scanning: ' + dirHandle.name);
                     allImages = [];
+                    detectedSets.real.clear();
+                    detectedSets.ai.clear();
                     await scanAll(dirHandle);
                     log(`Found ${allImages.length} images`);
                     processImages();
@@ -164,79 +157,95 @@
             }
         }
 
+        async function canRead(dirHandle) {
+            try {
+                if (!dirHandle.queryPermission) return true;
+                const q = await dirHandle.queryPermission({ mode: 'read' });
+                if (q === 'granted') return true;
+                if (q === 'denied') return false;
+                if (!dirHandle.requestPermission) return true;
+                const r = await dirHandle.requestPermission({ mode: 'read' });
+                return r !== 'denied';
+            } catch { return true; }
+        }
+
         async function scanAll(dirHandle) {
-            for await (const entry of dirHandle.values()) {
-                if (entry.kind === 'directory') await scanRecursive(entry, entry.name);
-            }
+            try {
+                for await (const entry of dirHandle.values()) {
+                    if (entry.kind !== 'directory') continue;
+                    if (entry.name.startsWith('.')) continue;
+                    try { await scanRecursive(entry, entry.name); }
+                    catch (e) { log('Skip ' + entry.name + ': ' + e.message); }
+                }
+            } catch (e) { log('Scan error: ' + e.message); }
         }
 
         async function scanRecursive(dirHandle, path) {
+            if (!(await canRead(dirHandle))) { log('Permission denied: ' + path); return; }
             try {
-                const p = await dirHandle.requestPermission({ mode: 'read' });
-                if (p !== 'granted') { log('Permission denied: ' + path); return; }
-            } catch { return; }
-            for await (const entry of dirHandle.values()) {
-                if (entry.kind === 'directory') {
-                    const newPath = path + '/' + entry.name;
-                    if (entry.name === 'jpg') await scanJpgFolder(entry, path, false);
-                    else if (entry.name === 'submitted') await scanSubmittedFolder(entry, path);
-                    else await scanRecursive(entry, newPath);
+                for await (const entry of dirHandle.values()) {
+                    if (entry.kind !== 'directory') continue;
+                    if (entry.name.startsWith('.')) continue;
+                    if (entry.name === 'jpg') {
+                        const category = path.split('/')[0];
+                        const status = statusFromPath(path);
+                        await scanJpgFolder(entry, category, status, status === null);
+                    } else if (entry.name === 'svg' || entry.name === 'code') {
+                        // no JPGs inside, skip
+                    } else {
+                        try { await scanRecursive(entry, path + '/' + entry.name); }
+                        catch (e) { log('Skip ' + path + '/' + entry.name + ': ' + e.message); }
+                    }
                 }
-            }
+            } catch (e) { log('Stop at ' + path + ': ' + e.message); }
         }
 
-        async function scanSubmittedFolder(dirHandle, basePath) {
+        async function scanJpgFolder(dirHandle, category, status, collect) {
+            if (!(await canRead(dirHandle))) return;
             try {
-                const p = await dirHandle.requestPermission({ mode: 'read' });
-                if (p !== 'granted') return;
-            } catch { return; }
-            const category = basePath.split('/').pop();
-            for await (const entry of dirHandle.values()) {
-                if (entry.kind === 'directory' && entry.name === 'jpg') {
-                    await scanJpgFolder(entry, category, true);
+                for await (const entry of dirHandle.values()) {
+                    if (entry.kind === 'file' && entry.name.endsWith('.jpg')) {
+                        try {
+                            const name = entry.name.replace('.jpg', '');
+                            const base = baseName(name);
+                            if (status) {
+                                detectedSets[status].add(base);
+                            } else if (collect) {
+                                const file = await entry.getFile();
+                                allImages.push({
+                                    name: name,
+                                    path: URL.createObjectURL(file),
+                                    category: category,
+                                    size: file.size
+                                });
+                            }
+                        } catch { log('Failed: ' + entry.name); }
+                    }
                 }
-            }
-        }
-
-        async function scanJpgFolder(dirHandle, category, isSubmitted) {
-            try {
-                const p = await dirHandle.requestPermission({ mode: 'read' });
-                if (p !== 'granted') return;
-            } catch { return; }
-            for await (const entry of dirHandle.values()) {
-                if (entry.kind === 'file' && entry.name.endsWith('.jpg')) {
-                    try {
-                        const file = await entry.getFile();
-                        const name = entry.name.replace('.jpg', '');
-                        allImages.push({
-                            name: name,
-                            path: URL.createObjectURL(file),
-                            category: category,
-                            size: file.size,
-                            isSubmitted: isSubmitted
-                        });
-                        setStatus(name, isSubmitted ? 'submitted' : 'draft');
-                    } catch { log('Failed: ' + entry.name); }
-                }
-            }
+            } catch (e) { log('Stop at ' + category + '/jpg: ' + e.message); }
         }
 
         function handleFileInput(files) {
             allImages = [];
+            detectedSets.real.clear();
+            detectedSets.ai.clear();
             for (const file of files) {
-                if (file.name.endsWith('.jpg')) {
-                    const parts = file.webkitRelativePath.split('/');
-                    const catIdx = parts.findIndex(p => p === 'output');
-                    const isSubmitted = parts.includes('submitted');
-                    const name = file.name.replace('.jpg', '');
+                if (!file.name.endsWith('.jpg')) continue;
+                const rel = file.webkitRelativePath;
+                const parts = rel.split('/');
+                const category = parts[0] || 'unknown';
+                const status = statusFromPath(rel);
+                const name = file.name.replace('.jpg', '');
+                const base = baseName(name);
+                if (status) {
+                    detectedSets[status].add(base);
+                } else {
                     allImages.push({
                         name: name,
                         path: URL.createObjectURL(file),
-                        category: catIdx > 0 ? parts[catIdx - 1] : 'unknown',
-                        size: file.size,
-                        isSubmitted: isSubmitted
+                        category: category,
+                        size: file.size
                     });
-                    setStatus(name, isSubmitted ? 'submitted' : 'draft');
                 }
             }
             processImages();
@@ -256,10 +265,12 @@
                 `<button class="filter-btn active" data-cat="all">All (${allImages.length})</button>` +
                 cats.map(c => `<button class="filter-btn" data-cat="${c}">${c} (${allImages.filter(i => i.category === c).length})</button>`).join('');
 
+            const count = s => allImages.filter(i => getStatus(i.name) === s).length;
             filterStatusEl.innerHTML = `<span class="filter-label">Status</span>` +
                 `<button class="filter-btn active" data-status="all">All</button>` +
-                `<button class="filter-btn" data-status="submitted">Submitted (${allImages.filter(i => getStatus(i.name) === 'submitted').length})</button>` +
-                `<button class="filter-btn" data-status="draft">Draft (${allImages.filter(i => getStatus(i.name) === 'draft').length})</button>`;
+                `<button class="filter-btn" data-status="real">Real (${count('real')})</button>` +
+                `<button class="filter-btn" data-status="ai">AI (${count('ai')})</button>` +
+                `<button class="filter-btn" data-status="draft">Draft (${count('draft')})</button>`;
 
             filterCategoriesEl.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -290,15 +301,17 @@
             });
 
             filtered.sort((a, b) => {
-                const sa = getStatus(a.name) === 'submitted' ? 0 : 1;
-                const sb = getStatus(b.name) === 'submitted' ? 0 : 1;
+                const order = { real: 0, ai: 1, draft: 2 };
+                const sa = order[getStatus(a.name)] ?? 3;
+                const sb = order[getStatus(b.name)] ?? 3;
                 if (sa !== sb) return sa - sb;
                 return a.name.localeCompare(b.name);
             });
 
-            const sub = filtered.filter(i => getStatus(i.name) === 'submitted').length;
+            const real = filtered.filter(i => getStatus(i.name) === 'real').length;
+            const ai = filtered.filter(i => getStatus(i.name) === 'ai').length;
             const dra = filtered.filter(i => getStatus(i.name) === 'draft').length;
-            statsEl.textContent = `Showing ${filtered.length} | Submitted: ${sub} | Draft: ${dra}`;
+            statsEl.textContent = `Showing ${filtered.length} | Real: ${real} | AI: ${ai} | Draft: ${dra}`;
 
             galleryEl.innerHTML = filtered.map(img => {
                 const st = getStatus(img.name);
@@ -320,34 +333,19 @@
         }
 
         function openModal(img) {
-            currentModalImg = img;
+            const st = getStatus(img.name);
             modalImg.src = img.path;
             modalName.textContent = img.name.replace(/_/g, ' ');
-            updateModalStatusBtns(getStatus(img.name));
+            modalStatus.className = 'modal-status-label ' + st;
+            modalStatus.textContent = st;
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
-        }
-
-        function updateModalStatusBtns(activeStatus) {
-            modalStatusBtns.querySelectorAll('.modal-status-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.status === activeStatus);
-            });
         }
 
         function closeModal() {
             modal.classList.remove('active');
             document.body.style.overflow = '';
-            currentModalImg = null;
         }
-
-        modalStatusBtns.querySelectorAll('.modal-status-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (!currentModalImg) return;
-                setStatus(currentModalImg.name, btn.dataset.status);
-                updateModalStatusBtns(btn.dataset.status);
-                renderGallery();
-            });
-        });
 
         modalClose.addEventListener('click', closeModal);
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
@@ -355,8 +353,6 @@
 
         openFolderBtn.addEventListener('click', openFolder);
         openFolderEmpty.addEventListener('click', openFolder);
-
-        initSubmittedList();
     </script>
 </body>
 </html>
