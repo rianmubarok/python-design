@@ -73,6 +73,24 @@ def abstract_grid_tessellation_isometric_pyramid_depth_stair_pattern_black_white
                 sp3 = (apex[0] + scale * (p3[0] - apex[0]), apex[1] + scale * (p3[1] - apex[1]))
                 ax.plot([sp1[0], sp2[0], sp3[0], sp1[0]], [sp1[1], sp2[1], sp3[1], sp1[1]], color="black", linewidth=0.6)
 
+
+    all_x = []
+    all_y = []
+    for line in ax.lines:
+        all_x.extend(line.get_xdata())
+        all_y.extend(line.get_ydata())
+    for patch in ax.patches:
+        if hasattr(patch, 'get_path'):
+            vertices = patch.get_path().vertices
+            all_x.extend(vertices[:, 0])
+            all_y.extend(vertices[:, 1])
+            
+    if all_x and all_y:
+        cx = (min(all_x) + max(all_x)) / 2
+        cy = (min(all_y) + max(all_y)) / 2
+        ax.set_xlim(cx - 55, cx + 55)
+        ax.set_ylim(cy - 55, cy + 55)
+        
     save(fig, "abstract grid tessellation isometric pyramid depth stair pattern black white texture")
 
 

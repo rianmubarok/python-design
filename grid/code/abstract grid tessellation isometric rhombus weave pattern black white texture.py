@@ -72,6 +72,24 @@ def abstract_grid_tessellation_isometric_rhombus_weave_pattern_black_white_textu
                 p_end = (v3[0] + t * (v2[0] - v3[0]), v3[1] + t * (v2[1] - v3[1]))
                 ax.plot([p_start[0], p_end[0]], [p_start[1], p_end[1]], color="black", linewidth=0.6)
 
+
+    all_x = []
+    all_y = []
+    for line in ax.lines:
+        all_x.extend(line.get_xdata())
+        all_y.extend(line.get_ydata())
+    for patch in ax.patches:
+        if hasattr(patch, 'get_path'):
+            vertices = patch.get_path().vertices
+            all_x.extend(vertices[:, 0])
+            all_y.extend(vertices[:, 1])
+            
+    if all_x and all_y:
+        cx = (min(all_x) + max(all_x)) / 2
+        cy = (min(all_y) + max(all_y)) / 2
+        ax.set_xlim(cx - 55, cx + 55)
+        ax.set_ylim(cy - 55, cy + 55)
+        
     save(fig, "abstract grid tessellation isometric rhombus weave pattern black white texture")
 
 
