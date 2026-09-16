@@ -71,6 +71,24 @@ def abstract_grid_tessellation_hexagonal_honeycomb_inner_squircle_node_pattern_b
             y_sq = cy + r_sq * np.sign(sin_t) * (np.abs(sin_t) ** (2 / p))
             ax.plot(x_sq, y_sq, color="black", linewidth=0.8)
 
+
+    all_x = []
+    all_y = []
+    for line in ax.lines:
+        all_x.extend(line.get_xdata())
+        all_y.extend(line.get_ydata())
+    for patch in ax.patches:
+        if hasattr(patch, 'get_path'):
+            vertices = patch.get_path().vertices
+            all_x.extend(vertices[:, 0])
+            all_y.extend(vertices[:, 1])
+            
+    if all_x and all_y:
+        cx = (min(all_x) + max(all_x)) / 2
+        cy = (min(all_y) + max(all_y)) / 2
+        ax.set_xlim(cx - 55, cx + 55)
+        ax.set_ylim(cy - 55, cy + 55)
+        
     save(fig, "abstract grid tessellation hexagonal honeycomb inner squircle node pattern black white texture")
 
 

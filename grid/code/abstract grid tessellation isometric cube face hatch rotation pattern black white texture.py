@@ -79,6 +79,24 @@ def abstract_grid_tessellation_isometric_cube_face_hatch_rotation_pattern_black_
                 h2 = (v_center[0] + t * (v_right[0] - v_center[0]), v_center[1] + t * (v_right[1] - v_center[1]))
                 ax.plot([h1[0], h2[0]], [h1[1], h2[1]], color="black", linewidth=0.5)
 
+
+    all_x = []
+    all_y = []
+    for line in ax.lines:
+        all_x.extend(line.get_xdata())
+        all_y.extend(line.get_ydata())
+    for patch in ax.patches:
+        if hasattr(patch, 'get_path'):
+            vertices = patch.get_path().vertices
+            all_x.extend(vertices[:, 0])
+            all_y.extend(vertices[:, 1])
+            
+    if all_x and all_y:
+        cx = (min(all_x) + max(all_x)) / 2
+        cy = (min(all_y) + max(all_y)) / 2
+        ax.set_xlim(cx - 55, cx + 55)
+        ax.set_ylim(cy - 55, cy + 55)
+        
     save(fig, "abstract grid tessellation isometric cube face hatch rotation pattern black white texture")
 
 
