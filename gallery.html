@@ -24,6 +24,8 @@
         .filter-btn[data-status="ai"].active { background: #f97316; color: #000; border-color: #f97316; }
         .filter-btn[data-status="draft"] { border-color: #666; color: #666; }
         .filter-btn[data-status="draft"].active { background: #666; color: #000; border-color: #666; }
+        .filter-btn[data-status="trash"] { border-color: #ef4444; color: #ef4444; }
+        .filter-btn[data-status="trash"].active { background: #ef4444; color: #000; border-color: #ef4444; }
         .stats { margin-top: 8px; font-size: 0.8rem; color: #555; }
         .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; padding: 24px 30px; }
         .card { background: #141414; border-radius: 8px; overflow: hidden; transition: transform 0.15s ease; position: relative; }
@@ -32,6 +34,7 @@
         .card-badge.real { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
         .card-badge.ai { background: #f97316; box-shadow: 0 0 6px #f97316; }
         .card-badge.draft { background: #666; }
+        .card-badge.trash { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
         .card-img { width: 100%; aspect-ratio: 1; object-fit: cover; cursor: pointer; background: #1a1a1a; }
         .card-info { padding: 12px; }
         .card-name { font-size: 0.8rem; color: #ccc; word-break: break-word; }
@@ -40,6 +43,7 @@
         .card-status-label.real { background: #22c55e22; color: #22c55e; }
         .card-status-label.ai { background: #f9731622; color: #f97316; }
         .card-status-label.draft { background: #66666622; color: #666; }
+        .card-status-label.trash { background: #ef444422; color: #ef4444; }
         .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: calc(100vh - 200px); text-align: center; color: #444; }
         .empty-state h2 { font-size: 1.2rem; font-weight: 400; margin-bottom: 10px; color: #666; }
         .empty-state p { font-size: 0.85rem; margin-bottom: 20px; max-width: 400px; line-height: 1.5; }
@@ -55,6 +59,7 @@
         .modal-status-label.real { background: #22c55e22; color: #22c55e; }
         .modal-status-label.ai { background: #f9731622; color: #f97316; }
         .modal-status-label.draft { background: #66666622; color: #666; }
+        .modal-status-label.trash { background: #ef444422; color: #ef4444; }
         .debug { position: fixed; bottom: 10px; right: 10px; font-size: 0.7rem; color: #333; font-family: monospace; }
     </style>
 </head>
@@ -72,7 +77,7 @@
 
     <div class="empty-state" id="emptyState">
         <h2>No images loaded</h2>
-        <p>Click "Open Folder" and select your project folder (e.g., python-design). The gallery reads the master list from each category's output/jpg and gets the status from ai-detected/jpg and real-detected/jpg.</p>
+        <p>Click "Open Folder" and select your project folder (e.g., python-design). The gallery lists images from each category's output/jpg (draft), ai-detected/jpg, real-detected/jpg, and trash/jpg, deriving each item's status from the folder it lives in.</p>
         <button class="folder-btn" id="openFolderEmpty">Open Folder</button>
     </div>
 
@@ -96,7 +101,7 @@
         let currentStatus = 'all';
 
         // Status comes directly from the detected folders (read-only).
-        const detectedSets = { real: new Set(), ai: new Set() };
+        const detectedSets = { real: new Set(), ai: new Set(), trash: new Set() };
 
         const openFolderBtn = document.getElementById('openFolder');
         const openFolderEmpty = document.getElementById('openFolderEmpty');
@@ -121,15 +126,16 @@
         function statusFromPath(path) {
             if (path.includes('ai-detected')) return 'ai';
             if (path.includes('real-detected')) return 'real';
+            if (path.includes('trash')) return 'trash';
             return null;
         }
 
-        // Category = the folder right before output/ai-detected/real-detected.
+        // Category = the folder right before output/ai-detected/real-detected/trash.
         // Works whether or not the path starts with the selected root folder
         // (webkitRelativePath includes the root, the directory picker does not).
         function categoryFromPath(path) {
             const parts = path.split('/').filter(Boolean);
-            const idx = parts.findIndex(p => p === 'output' || p === 'ai-detected' || p === 'real-detected');
+            const idx = parts.findIndex(p => p === 'output' || p === 'ai-detected' || p === 'real-detected' || p === 'trash');
             if (idx > 0) return parts[idx - 1];
             return parts[0] || 'unknown';
         }
@@ -138,6 +144,7 @@
             const base = baseName(name);
             if (detectedSets.real.has(base)) return 'real';
             if (detectedSets.ai.has(base)) return 'ai';
+            if (detectedSets.trash.has(base)) return 'trash';
             return 'draft';
         }
 
@@ -150,6 +157,7 @@
                     allImages = [];
                     detectedSets.real.clear();
                     detectedSets.ai.clear();
+                    detectedSets.trash.clear();
                     await scanAll(dirHandle);
                     log(`Found ${allImages.length} images`);
                     processImages();
@@ -220,7 +228,8 @@
                             const base = baseName(name);
                             if (status) {
                                 detectedSets[status].add(base);
-                            } else if (collect) {
+                            }
+                            if (collect || status) {
                                 const file = await entry.getFile();
                                 allImages.push({
                                     name: name,
@@ -239,6 +248,7 @@
             allImages = [];
             detectedSets.real.clear();
             detectedSets.ai.clear();
+            detectedSets.trash.clear();
             for (const file of files) {
                 if (!file.name.endsWith('.jpg')) continue;
                 const rel = file.webkitRelativePath;
@@ -248,14 +258,13 @@
                 const base = baseName(name);
                 if (status) {
                     detectedSets[status].add(base);
-                } else {
-                    allImages.push({
-                        name: name,
-                        path: URL.createObjectURL(file),
-                        category: category,
-                        size: file.size
-                    });
                 }
+                allImages.push({
+                    name: name,
+                    path: URL.createObjectURL(file),
+                    category: category,
+                    size: file.size
+                });
             }
             processImages();
         }
@@ -288,7 +297,8 @@
                 `<button class="filter-btn${currentStatus === 'all' ? ' active' : ''}" data-status="all">All (${allImages.filter(statusMatch).length})</button>` +
                 `<button class="filter-btn${currentStatus === 'real' ? ' active' : ''}" data-status="real">Real (${count('real')})</button>` +
                 `<button class="filter-btn${currentStatus === 'ai' ? ' active' : ''}" data-status="ai">AI (${count('ai')})</button>` +
-                `<button class="filter-btn${currentStatus === 'draft' ? ' active' : ''}" data-status="draft">Draft (${count('draft')})</button>`;
+                `<button class="filter-btn${currentStatus === 'draft' ? ' active' : ''}" data-status="draft">Draft (${count('draft')})</button>` +
+                `<button class="filter-btn${currentStatus === 'trash' ? ' active' : ''}" data-status="trash">Trash (${count('trash')})</button>`;
 
             filterCategoriesEl.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => { currentCategory = btn.dataset.cat; renderGallery(); });
@@ -308,7 +318,7 @@
             });
 
             filtered.sort((a, b) => {
-                const order = { real: 0, ai: 1, draft: 2 };
+                const order = { real: 0, ai: 1, draft: 2, trash: 3 };
                 const sa = order[getStatus(a.name)] ?? 3;
                 const sb = order[getStatus(b.name)] ?? 3;
                 if (sa !== sb) return sa - sb;
@@ -318,7 +328,8 @@
             const real = filtered.filter(i => getStatus(i.name) === 'real').length;
             const ai = filtered.filter(i => getStatus(i.name) === 'ai').length;
             const dra = filtered.filter(i => getStatus(i.name) === 'draft').length;
-            statsEl.textContent = `Showing ${filtered.length} | Real: ${real} | AI: ${ai} | Draft: ${dra}`;
+            const tra = filtered.filter(i => getStatus(i.name) === 'trash').length;
+            statsEl.textContent = `Showing ${filtered.length} | Real: ${real} | AI: ${ai} | Draft: ${dra} | Trash: ${tra}`;
 
             galleryEl.innerHTML = filtered.map(img => {
                 const st = getStatus(img.name);
