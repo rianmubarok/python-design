@@ -43,19 +43,25 @@ def generate():
     """Cafe wall with diamond/rhombus tiles instead of rectangles."""
     fig, ax = setup_ax()
 
-    n_rows = 16
-    n_cols = 14
+    n_rows = 18
+    n_cols = 16
     tile_w = 7.0
-    tile_h = 5.0
+    tile_h = 5.5
     offsets = [0, 0.35, 0.5, 0.35, 0, -0.35, -0.5, -0.35]
 
+    # Center the grid on canvas (50, 50)
+    total_h = n_rows * tile_h
+    total_w = n_cols * tile_w
+    y_offset = (100 - total_h) / 2
+    x_offset = (100 - total_w) / 2
+
     for r in range(n_rows):
-        y_center = r * tile_h + tile_h / 2
+        y_center = y_offset + r * tile_h + tile_h / 2
         shift = offsets[r % len(offsets)] * tile_w
 
         for c in range(-2, n_cols + 2):
             if (c + r) % 2 == 0:
-                x_center = c * tile_w + tile_w / 2 + shift
+                x_center = x_offset + c * tile_w + tile_w / 2 + shift
                 # Diamond shape
                 pts = np.array([
                     [x_center, y_center + tile_h / 2],

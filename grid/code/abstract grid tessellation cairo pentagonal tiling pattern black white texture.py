@@ -68,10 +68,14 @@ def draw():
     # The Cairo tiling consists of two orientations of pentagons.
     # We can tile it by placing 4 pentagons around every alternating grid node.
     
-    for row in range(-5, rows + 5):
-        for col in range(-5, cols + 5):
-            cx = col * scale * 2.0
-            cy = row * scale * 2.0
+    # Center the grid on (50, 50)
+    grid_cx = 50.0
+    grid_cy = 50.0
+    
+    for row in range(-rows // 2 - 2, rows // 2 + 3):
+        for col in range(-cols // 2 - 2, cols // 2 + 3):
+            cx = grid_cx + col * scale * 2.0
+            cy = grid_cy + row * scale * 2.0
             
             # The tiling alternates
             if (row + col) % 2 == 0:
