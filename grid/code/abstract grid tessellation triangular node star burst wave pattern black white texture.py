@@ -76,7 +76,13 @@ def abstract_grid_tessellation_triangular_node_star_burst_wave_pattern_black_whi
         all_x.extend(line.get_xdata())
         all_y.extend(line.get_ydata())
     for patch in ax.patches:
-        if hasattr(patch, 'get_path'):
+        if hasattr(patch, 'get_patch_transform') and hasattr(patch, 'get_path'):
+            trans = patch.get_patch_transform()
+            path = patch.get_path()
+            vertices = trans.transform_path(path).vertices
+            all_x.extend(vertices[:, 0])
+            all_y.extend(vertices[:, 1])
+        elif hasattr(patch, 'get_path'):
             vertices = patch.get_path().vertices
             all_x.extend(vertices[:, 0])
             all_y.extend(vertices[:, 1])

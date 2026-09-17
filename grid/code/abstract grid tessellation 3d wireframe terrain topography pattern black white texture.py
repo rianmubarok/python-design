@@ -38,48 +38,53 @@ def save(fig, name):
 def draw():
     """
     3D Wireframe Terrain Topography.
-    A rectangular grid distorted by 3D pseudo-noise and projected in perspective
-    to look like a retro wireframe mountain landscape.
+
+    The terrain is rendered back-to-front with each mesh cell filled as an
+    opaque white polygon. Because nearer cells are painted last, they mask the
+    lines of the geometry behind them (painter's algorithm), giving a solid
+    hidden-surface look instead of every line bleeding through every other one.
     """
     fig, ax = setup_ax()
     rng = np.random.default_rng(42)
 
-    n_lines = 40
-    # Grid in 3D space
-    x = np.linspace(-30, 130, n_lines)
-    z = np.linspace(10, 150, n_lines)
+    n_lines = 45
+    # Grid in 3D space (overflows the canvas so there are no barren borders)
+    x = np.linspace(-40.0, 140.0, n_lines)
+    z = np.linspace(15.0, 160.0, n_lines)
     X, Z = np.meshgrid(x, z)
-    
-    # Generate Perlin-like noise for Y (height)
-    Y = np.zeros_like(X)
-    for f in [0.03, 0.08, 0.15]:
-        phase_x = rng.uniform(0, 2*np.pi)
-        phase_z = rng.uniform(0, 2*np.pi)
-        amp = 1.0 / f
-        Y += np.sin(X * f + phase_x) * np.cos(Z * f + phase_z) * amp * 0.4
-        
-    # Project 3D (X, Y, Z) to 2D (screen_x, screen_y) using simple perspective
-    cam_z = -50
-    fov = 120.0
-    
-    screen_x = np.zeros_like(X)
-    screen_y = np.zeros_like(X)
-    
-    for i in range(n_lines):
-        for j in range(n_lines):
-            # Depth
-            depth = Z[i, j] - cam_z
-            # Perspective divide
-            screen_x[i, j] = 50.0 + (X[i, j] - 50.0) * fov / depth
-            screen_y[i, j] = 10.0 + Y[i, j] * (fov / depth) + (depth * 0.4) # tilt down
 
-    # Draw horizontal grid lines
-    for i in range(n_lines):
-        ax.plot(screen_x[i, :], screen_y[i, :], color="black", linewidth=1.0)
-        
-    # Draw vertical grid lines
-    for j in range(n_lines):
-        ax.plot(screen_x[:, j], screen_y[:, j], color="black", linewidth=1.0)
+    # Balanced, organic pseudo-noise terrain heights (Y)
+    Y = np.zeros_like(X)
+    for f in [0.03, 0.07, 0.14]:
+        phase_x = rng.uniform(0, 2 * np.pi)
+        phase_z = rng.uniform(0, 2 * np.pi)
+        amp = 1.0 / f
+        Y += np.sin(X * f + phase_x) * np.cos(Z * f + phase_z) * amp * 0.35
+
+    # Project 3D (X, Y, Z) to 2D screen coordinates with a simple perspective
+    cam_z = -60
+    fov = 130.0
+    depth = Z - cam_z
+
+    screen_x = 50.0 + (X - 50.0) * fov / depth
+    screen_y = -24.0 + Y * (fov / depth) + depth * 0.55
+
+    import matplotlib.patches as patches
+
+    # Painter's algorithm: farthest rows first so nearer cells occlude them
+    for i in reversed(range(n_lines - 1)):
+        for j in range(n_lines - 1):
+            p1 = [screen_x[i, j], screen_y[i, j]]          # bottom-left
+            p2 = [screen_x[i, j + 1], screen_y[i, j + 1]]  # bottom-right
+            p3 = [screen_x[i + 1, j + 1], screen_y[i + 1, j + 1]]  # top-right
+            p4 = [screen_x[i + 1, j], screen_y[i + 1, j]]  # top-left
+
+            poly = patches.Polygon([p1, p2, p3, p4], closed=True,
+                                   facecolor="white", edgecolor="black", linewidth=0.8)
+            ax.add_patch(poly)
+
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 100)
 
     save(fig, "abstract grid tessellation 3d wireframe terrain topography pattern black white texture")
 

@@ -42,48 +42,33 @@ def save(fig, name):
 def abstract_grid_tessellation_hexagonal_honeycomb_variable_radius_pattern_black_white_texture():
     """Tweak: Hexagonal grid where cell radius shrinks dynamically toward the center of the canvas."""
     fig, ax = setup_ax()
-    
+
     r_max = 6.0
     dx = r_max * np.sqrt(3)
     dy = r_max * 1.5
-    
-    n_cols = 12
-    n_rows = 12
-    
-    for row in range(n_rows):
-        for col in range(n_cols):
-            cx = col * dx
+
+    # Build the lattice centered on the canvas (50, 50) so the shrink focal point
+    # and the artwork itself are both perfectly centered.
+    n = 7
+    cells = []
+    for row in range(-n, n + 1):
+        for col in range(-n, n + 1):
+            cx = 50 + col * dx
             if row % 2 != 0:
                 cx += dx / 2
-            cy = row * dy
-            
-            # Distance from center
-            dist = np.sqrt((cx - 50)**2 + (cy - 50)**2)
-            # Shrink toward center
-            r_cell = r_max * (0.35 + 0.65 * (dist / 70.0))
-            r_cell = min(r_max, max(1.0, r_cell))
-            
-            hex_cell = RegularPolygon((cx, cy), numVertices=6, radius=r_cell, orientation=0, fill=False, edgecolor="black", linewidth=1.2)
-            ax.add_patch(hex_cell)
+            cy = 50 + row * dy
+            cells.append((cx, cy))
 
+    max_dist = max(np.hypot(cx - 50, cy - 50) for cx, cy in cells)
 
-    all_x = []
-    all_y = []
-    for line in ax.lines:
-        all_x.extend(line.get_xdata())
-        all_y.extend(line.get_ydata())
-    for patch in ax.patches:
-        if hasattr(patch, 'get_path'):
-            vertices = patch.get_path().vertices
-            all_x.extend(vertices[:, 0])
-            all_y.extend(vertices[:, 1])
-            
-    if all_x and all_y:
-        cx = (min(all_x) + max(all_x)) / 2
-        cy = (min(all_y) + max(all_y)) / 2
-        ax.set_xlim(cx - 55, cx + 55)
-        ax.set_ylim(cy - 55, cy + 55)
-        
+    for cx, cy in cells:
+        dist = np.hypot(cx - 50, cy - 50)
+        r_cell = r_max * (0.35 + 0.65 * (dist / max_dist))
+        r_cell = min(r_max, max(1.0, r_cell))
+
+        hex_cell = RegularPolygon((cx, cy), numVertices=6, radius=r_cell, orientation=0, fill=False, edgecolor="black", linewidth=1.2)
+        ax.add_patch(hex_cell)
+
     save(fig, "abstract grid tessellation hexagonal honeycomb variable radius pattern black white texture")
 
 

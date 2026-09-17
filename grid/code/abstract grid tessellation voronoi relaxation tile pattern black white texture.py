@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 from pathlib import Path
 from datetime import datetime
+from scipy.spatial import Voronoi  # <-- Tambahkan library ini untuk tessellation asli
 
 SIZE = 4000
 DPI = 300
@@ -40,25 +41,47 @@ def save(fig, name):
 
 
 def abstract_grid_tessellation_voronoi_relaxation_tile_pattern_black_white_texture():
-    """Tweak: Lloyd-relaxed Voronoi cell grid filled with concentric inner polygon outlines."""
+    """Tweak: Menghasilkan pola ubin sel Voronoi asli dengan efek relaksasi Lloyd."""
     fig, ax = setup_ax()
     
-    # 25 seed points
-    n_seeds = 25
-    seeds_x = np.random.uniform(10, 90, n_seeds)
-    seeds_y = np.random.uniform(10, 90, n_seeds)
+    # 1. Generate seed points di area tengah agar sel pinggir tidak pecah ke tak terhingga
+    n_seeds = 35
+    seeds = np.random.uniform(5, 95, size=(n_seeds, 2))
     
-    # Render approximate Voronoi inner rings around each seed
-    t = np.linspace(0, 2 * np.pi, 7)  # Heptagon approximation
+    # 2. Lloyd's Relaxation (10 iterasi untuk membuat jarak antar titik lebih seragam/organik)
+    for _ in range(10):
+        vor = Voronoi(seeds)
+        new_seeds = []
+        for i, region_idx in enumerate(vor.point_region):
+            region = vor.regions[region_idx]
+            # Pastikan region tertutup (tidak ada indeks -1)
+            if not region or -1 in region:
+                new_seeds.append(seeds[i])
+                continue
+            polygon = vor.vertices[region]
+            # Hitung titik berat (centroid) sebagai posisi seed baru
+            centroid = np.mean(polygon, axis=0)
+            new_seeds.append(centroid)
+        seeds = np.array(new_seeds)
     
-    for i in range(n_seeds):
-        sx, sy = seeds_x[i], seeds_y[i]
+    # 3. Buat ulang Voronoi akhir setelah proses relaksasi selesai
+    vor = Voronoi(seeds)
+    
+    # 4. Gambar ubin konsentris di dalam setiap sel Voronoi yang valid
+    for region_idx in vor.point_region:
+        region = vor.regions[region_idx]
+        if not region or -1 in region:
+            continue
+            
+        vertices = vor.vertices[region]
+        centroid = np.mean(vertices, axis=0)
         
-        # Concentric rings
-        for r in np.linspace(1.5, 9.0, 5):
-            x_pts = sx + r * np.cos(t)
-            y_pts = sy + r * np.sin(t)
-            poly = Polygon(np.column_stack([x_pts, y_pts]), fill=False, edgecolor="black", linewidth=0.8)
+        # Buat cincin konsentris dari arah luar mengecil ke dalam (skala 0.95 down to 0.2)
+        for scale in np.linspace(0.95, 0.2, 5):
+            # Skalakan sudut poligon mendekati titik pusat sel (centroid)
+            scaled_vertices = centroid + (vertices - centroid) * scale
+            
+            poly = Polygon(scaled_vertices, fill=False, edgecolor="black", linewidth=0.8)
             ax.add_patch(poly)
 
     save(fig, "abstract grid tessellation voronoi relaxation tile pattern black white texture")

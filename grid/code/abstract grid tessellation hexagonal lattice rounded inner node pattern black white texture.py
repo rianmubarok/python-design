@@ -42,48 +42,29 @@ def save(fig, name):
 def abstract_grid_tessellation_hexagonal_lattice_rounded_inner_node_pattern_black_white_texture():
     """Tweak: Hexagonal grid with nested inner scaling hexagons in every cell."""
     fig, ax = setup_ax()
-    
+
     r_outer = 6.0
     dx = r_outer * np.sqrt(3)
     dy = r_outer * 1.5
-    
-    n_cols = 12
-    n_rows = 12
-    
-    for row in range(n_rows):
-        for col in range(n_cols):
-            cx = col * dx
+
+    # Build the lattice centered on the canvas (50, 50).
+    n = 7
+    for row in range(-n, n + 1):
+        for col in range(-n, n + 1):
+            cx = 50 + col * dx
             if row % 2 != 0:
                 cx += dx / 2
-            cy = row * dy
-            
+            cy = 50 + row * dy
+
             # Outer hexagon
             hex_out = RegularPolygon((cx, cy), numVertices=6, radius=r_outer, orientation=0, fill=False, edgecolor="black", linewidth=1.2)
             ax.add_patch(hex_out)
-            
+
             # Concentric inner hexagons scaling down
             for scale in [0.75, 0.5, 0.25]:
-                hex_in = RegularPolygon((cx, cy), numVertices=6, radius=r_outer*scale, orientation=0, fill=False, edgecolor="black", linewidth=0.6)
+                hex_in = RegularPolygon((cx, cy), numVertices=6, radius=r_outer * scale, orientation=0, fill=False, edgecolor="black", linewidth=0.6)
                 ax.add_patch(hex_in)
 
-
-    all_x = []
-    all_y = []
-    for line in ax.lines:
-        all_x.extend(line.get_xdata())
-        all_y.extend(line.get_ydata())
-    for patch in ax.patches:
-        if hasattr(patch, 'get_path'):
-            vertices = patch.get_path().vertices
-            all_x.extend(vertices[:, 0])
-            all_y.extend(vertices[:, 1])
-            
-    if all_x and all_y:
-        cx = (min(all_x) + max(all_x)) / 2
-        cy = (min(all_y) + max(all_y)) / 2
-        ax.set_xlim(cx - 55, cx + 55)
-        ax.set_ylim(cy - 55, cy + 55)
-        
     save(fig, "abstract grid tessellation hexagonal lattice rounded inner node pattern black white texture")
 
 

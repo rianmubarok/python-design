@@ -38,48 +38,53 @@ def save(fig, name):
 def draw():
     """
     Optical Illusion Checkerboard Warp.
-    A standard checkerboard grid that is heavily warped by sine waves,
-    creating a bulging 3D sphere or ripple illusion (like Vasarely's Vega).
+
+    A regular checkerboard is warped by a smooth, normalised radial (barrel)
+    distortion so the grid flows into a convex 3-D spherical bulge, in the
+    spirit of Vasarely's "Vega".
+
+    The displacement is purely radial: X' = cx + DX * factor(R). Because the
+    factor is a monotonic function of R, every grid node moves along its own
+    ray and adjacent cells keep sharing their corners, so the checkerboard
+    stays coherent and no quadrant can collapse or fuse into solid blocks.
     """
     fig, ax = setup_ax()
 
     import matplotlib.patches as patches
-    
-    n_cells = 40
-    cell_size = 120.0 / n_cells
-    
-    # Create the grid points
-    grid_x = np.linspace(-10, 110, n_cells + 1)
-    grid_y = np.linspace(-10, 110, n_cells + 1)
-    
-    X, Y = np.meshgrid(grid_x, grid_y)
-    
-    # Warp the coordinates
+
+    n_cells = 42
+    grid_coords = np.linspace(-20.0, 120.0, n_cells + 1)   # overflows the canvas
+    X, Y = np.meshgrid(grid_coords, grid_coords)
+
     cx, cy = 50.0, 50.0
     DX = X - cx
     DY = Y - cy
     R = np.sqrt(DX**2 + DY**2)
-    
-    # Lens distortion: pull points outward around the center
-    # This creates a spherical bulge effect
-    mag = 1.0 + 30.0 * np.exp(-(R**2)/800.0)
-    
-    X_warped = cx + (DX / (R + 1e-5)) * mag * (R**0.8)
-    Y_warped = cy + (DY / (R + 1e-5)) * mag * (R**0.8)
 
-    # Draw the distorted checkerboard squares
+    # Smooth spherical bulge profile: magnifies the centre (> 1) and tapers
+    # back to 1 at R_max, so the outer frame stays undeformed.
+    R_max = 80.0
+    Rn = np.minimum(R, R_max) / R_max
+    factor = 1.0 + 0.45 * np.cos(Rn * np.pi / 2)
+
+    X_warped = cx + DX * factor
+    Y_warped = cy + DY * factor
+
     for i in range(n_cells):
         for j in range(n_cells):
-            # Only draw black squares
             if (i + j) % 2 == 0:
                 p1 = [X_warped[i, j], Y_warped[i, j]]
-                p2 = [X_warped[i, j+1], Y_warped[i, j+1]]
-                p3 = [X_warped[i+1, j+1], Y_warped[i+1, j+1]]
-                p4 = [X_warped[i+1, j], Y_warped[i+1, j]]
-                
-                poly = patches.Polygon([p1, p2, p3, p4], closed=True, 
-                                      facecolor='black', edgecolor='none')
+                p2 = [X_warped[i, j + 1], Y_warped[i, j + 1]]
+                p3 = [X_warped[i + 1, j + 1], Y_warped[i + 1, j + 1]]
+                p4 = [X_warped[i + 1, j], Y_warped[i + 1, j]]
+
+                # Edge colour matches the fill to avoid faint white seams
+                poly = patches.Polygon([p1, p2, p3, p4], closed=True,
+                                       facecolor="black", edgecolor="black", linewidth=0.2)
                 ax.add_patch(poly)
+
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 100)
 
     save(fig, "abstract grid tessellation optical illusion checkerboard warp pattern black white texture")
 

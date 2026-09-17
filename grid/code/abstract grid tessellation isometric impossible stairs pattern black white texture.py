@@ -19,8 +19,6 @@ def setup_ax():
     fig, ax = plt.subplots(figsize=(SIZE / DPI, SIZE / DPI), dpi=DPI)
     fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
     ax.set_facecolor("white")
-    ax.set_xlim(-5, 105)
-    ax.set_ylim(-5, 105)
     ax.set_aspect("equal")
     ax.axis("off")
     return fig, ax
@@ -38,70 +36,76 @@ def save(fig, name):
 def draw():
     """
     Isometric Impossible Stairs / Escher blocks.
-    Draws a grid of isometric cubes arranged in staggered heights, creating
-    an optical illusion of complex staircases.
+
+    Every tile is a mathematically exact isometric cube: the hexagonal
+    silhouette is split into three clean rhombi (top / left / right), so the
+    120-degree angles meet at the centre. The honeycomb lattice uses the
+    correct 30-degree spacing (columns 2*w apart, alternate rows offset by w),
+    which makes neighbouring cubes interlock edge-to-edge instead of overlapping.
+    A deterministic terracing height field turns it into an Escher-like
+    staircase texture.
     """
+    import matplotlib.patches as patches
+
     fig, ax = setup_ax()
-    rng = np.random.default_rng(42)
 
     cube_size = 3.5
-    h = cube_size * np.sqrt(3) / 2.0
-    
-    cols = 25
-    rows = 25
+    angle = np.pi / 6  # 30 degrees
+    h = cube_size * np.sin(angle)   # half height of the hexagon
+    w = cube_size * np.cos(angle)   # half width of the hexagon
 
-    # Face definitions for origin (0,0)
-    p1 = np.array([0, cube_size])
-    p2 = np.array([cube_size * np.cos(np.pi/6), cube_size * np.sin(np.pi/6)])
-    p3 = np.array([cube_size * np.cos(np.pi/6), -cube_size * np.sin(np.pi/6)])
-    p4 = np.array([0, -cube_size])
-    p5 = np.array([-cube_size * np.cos(np.pi/6), -cube_size * np.sin(np.pi/6)])
-    p6 = np.array([-cube_size * np.cos(np.pi/6), cube_size * np.sin(np.pi/6)])
-    center = np.array([0, 0])
+    # Exact isometric vertices (regular hexagon) centred on (0, 0)
+    p1 = np.array([0.0, cube_size])   # top vertex
+    p2 = np.array([w, h])             # upper right vertex
+    p3 = np.array([w, -h])            # lower right vertex
+    p4 = np.array([0.0, -cube_size])  # bottom vertex
+    p5 = np.array([-w, -h])           # lower left vertex
+    p6 = np.array([-w, h])            # upper left vertex
+    center = np.array([0.0, 0.0])     # middle intersection
 
-    face_top = [center, p1, p2, p3, center]
-    face_left = [center, p3, p4, p5, center]
-    face_right = [center, p5, p6, p1, center]
+    # The three visible cube faces, defined as clean rhombi
+    face_top = [center, p2, p1, p6, center]
+    face_left = [center, p6, p5, p4, center]
+    face_right = [center, p4, p3, p2, center]
 
-    import matplotlib.patches as patches
-    
-    # Generate a height map
-    heights = np.zeros((rows, cols))
-    for r in range(rows):
-        for c in range(cols):
-            # Perlin-like simple waves for stair structures
-            heights[r, c] = int((np.sin(r * 0.5) + np.cos(c * 0.5)) * 3)
+    n = 24
+    z_step = cube_size - h
 
-    # To draw correctly in isometric, we must sort by depth (back to front)
-    # y determines depth. Top of the screen is back, bottom is front.
-    # So we draw from row 0 down, and within a row, left to right.
-    
-    for row in reversed(range(rows)):
-        for col in range(cols):
-            cx = (col * 1.5) * cube_size - 10
-            # Offset y by row, and stagger odd columns
-            cy = (row * 2.0) * h - 10
-            if col % 2 != 0:
-                cy += h
-                
-            # Add height (z-axis in iso is just vertical translation on screen)
-            z_offset = heights[row, col] * cube_size
-            cy += z_offset
-            
-            top_poly = patches.Polygon(np.array(face_top) + [cx, cy], closed=True, 
-                                      facecolor='white', edgecolor='black', linewidth=1.5)
-            left_poly = patches.Polygon(np.array(face_left) + [cx, cy], closed=True, 
-                                      facecolor='black', edgecolor='black', linewidth=1.5)
-            # Use tight hatching for right face
-            right_poly = patches.Polygon(np.array(face_right) + [cx, cy], closed=True, 
-                                      facecolor='none', edgecolor='black', linewidth=1.5, hatch='\\\\\\\\')
-                                      
-            ax.add_patch(top_poly)
-            ax.add_patch(left_poly)
-            ax.add_patch(right_poly)
-            
-            # Optionally draw columns connecting down to a base so it looks solid
-            # but floating stairs look more abstract and Escher-like!
+    # Deterministic smooth height field -> terraced plateaus / stairs
+    heights = np.zeros((n, n))
+    for r in range(n):
+        for c in range(n):
+            heights[r, c] = int((np.sin(r * 0.4) + np.cos(c * 0.4)) * 2.5)
+
+    # Honeycomb lattice: columns are 2*w apart, every other row is offset by w,
+    # rows are (cube_size + h) apart. Render back-to-front (top rows first) so
+    # foreground blocks always occlude the background correctly.
+    for row in reversed(range(n)):
+        for col in range(n):
+            cx = col * 2 * w + (row % 2) * w
+            cy = row * (cube_size + h) + heights[row, col] * z_step
+
+            # Left face: solid black fill
+            ax.add_patch(patches.Polygon(
+                np.array(face_left) + [cx, cy], closed=True,
+                facecolor="black", edgecolor="black", linewidth=1.2))
+            # Right face: structured line hatching
+            ax.add_patch(patches.Polygon(
+                np.array(face_right) + [cx, cy], closed=True,
+                facecolor="white", edgecolor="black", linewidth=1.2, hatch="\\\\\\\\"))
+            # Top face: drawn last so it covers the side boundaries cleanly
+            ax.add_patch(patches.Polygon(
+                np.array(face_top) + [cx, cy], closed=True,
+                facecolor="white", edgecolor="black", linewidth=1.2))
+
+    # Square, centred composition that fills the canvas cleanly
+    x0, x1 = ax.dataLim.intervalx
+    y0, y1 = ax.dataLim.intervaly
+    ccx = (x0 + x1) / 2
+    ccy = (y0 + y1) / 2
+    half = max(x1 - x0, y1 - y0) / 2 * 1.03
+    ax.set_xlim(ccx - half, ccx + half)
+    ax.set_ylim(ccy - half, ccy + half)
 
     save(fig, "abstract grid tessellation isometric impossible stairs pattern black white texture")
 

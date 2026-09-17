@@ -51,7 +51,7 @@ def draw():
             "A": "-BF+AFA+FB-",
             "B": "+AF-BFB-FA+"
         }
-        
+
         state = "A"
         for _ in range(order):
             new_state = ""
@@ -62,16 +62,18 @@ def draw():
 
     order = 6
     path = hilbert(order)
-    
+
     # Grid size for order n is 2^n x 2^n
     n = 2 ** order
     step = 100.0 / (n - 1)
-    
-    x, y = 2.5, 2.5  # start position
+
+    # Start at the canvas origin. With n-1 steps of 100/(n-1) the curve spans
+    # exactly 0..100 on both axes, so it is centred inside the (-5, 105) viewport.
+    x, y = 0.0, 0.0
     dir_angle = 90  # start pointing up
-    
+
     points = [(x, y)]
-    
+
     for char in path:
         if char == "F":
             rad = np.radians(dir_angle)
@@ -84,37 +86,19 @@ def draw():
             dir_angle -= 90
 
     points = np.array(points)
-    
+
     import matplotlib.collections as collections
-    
+
     # We can draw the hilbert curve with varying thickness or colors
     segments = np.concatenate([points[:-1, np.newaxis, :], points[1:, np.newaxis, :]], axis=1)
-    
+
     # Let's make the line thickness pulse based on position to make it abstract
     lw = 1.0 + 2.0 * np.sin(np.linspace(0, 50 * np.pi, len(segments)))
     lw = np.clip(lw, 0.5, 3.0)
-    
+
     lc = collections.LineCollection(segments, linewidths=lw, colors="black", capstyle="projecting", joinstyle="miter")
     ax.add_collection(lc)
 
-
-    all_x = []
-    all_y = []
-    for line in ax.lines:
-        all_x.extend(line.get_xdata())
-        all_y.extend(line.get_ydata())
-    for patch in ax.patches:
-        if hasattr(patch, 'get_path'):
-            vertices = patch.get_path().vertices
-            all_x.extend(vertices[:, 0])
-            all_y.extend(vertices[:, 1])
-            
-    if all_x and all_y:
-        cx = (min(all_x) + max(all_x)) / 2
-        cy = (min(all_y) + max(all_y)) / 2
-        ax.set_xlim(cx - 55, cx + 55)
-        ax.set_ylim(cy - 55, cy + 55)
-        
     save(fig, "abstract grid tessellation hilbert curve space filling pattern black white texture")
 
 

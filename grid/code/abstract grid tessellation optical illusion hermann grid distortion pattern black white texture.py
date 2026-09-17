@@ -38,57 +38,61 @@ def save(fig, name):
 def draw():
     """
     Optical Illusion Hermann Grid Distortion.
-    The classic Hermann Grid illusion (black squares with white gutters causing
-    ghostly grey spots at the intersections), distorted by a radial lens effect.
+
+    The classic Hermann Grid (black squares separated by thin white gutters,
+    which makes faint grey spots appear at the intersections) is warped by a
+    smooth radial "spherical lens" mapping. Every corner of every square is
+    displaced individually through the same monotonic function, so:
+      * adjacent squares share the exact same distorted edge -> the white
+        gutters stay open and uniform (the illusion is preserved), and
+      * the lattice curves organically instead of the squares being merely
+        scaled in place (which made them overlap and close the gutters).
     """
     fig, ax = setup_ax()
 
     import matplotlib.patches as patches
-    
-    # We create a dense array of black squares
+
     grid_size = 40
-    cell_w = 120.0 / grid_size
-    gap = cell_w * 0.25 # The white gutter
-    
+    span = 120.0                      # base grid spans -10 .. 110
+    cell_w = span / grid_size
+    gap = cell_w * 0.22               # white gutter between squares
+
+    strength = 0.85                   # peak magnification at the centre
+    sigma = 30.0                      # reach of the lens effect
+
+    def lens(x, y):
+        """Monotonic radial (barrel/spherical) mapping centred on (50, 50)."""
+        dx, dy = x - 50.0, y - 50.0
+        r = np.hypot(dx, dy)
+        scale = 1.0 + strength * np.exp(-(r / sigma) ** 2)   # >1 centre, ~1 edge
+        return 50.0 + dx * scale, 50.0 + dy * scale, scale
+
     for row in range(grid_size):
         for col in range(grid_size):
-            cx = -10 + col * cell_w
-            cy = -10 + row * cell_w
-            
-            # Apply a geometric spherical distortion (Bulge effect)
-            # Find vector from center
-            dx = cx - 50.0
-            dy = cy - 50.0
-            dist = np.sqrt(dx**2 + dy**2)
-            
-            # Distortion factor (lens effect)
-            if dist < 45.0:
-                # Bulge outward
-                factor = 1.0 + 0.8 * np.cos(dist / 45.0 * np.pi/2)
-            else:
-                factor = 1.0
-                
-            # The trick is to distort the *size* and *position* of the squares
-            # while maintaining the gap ratio.
-            
-            # To do this accurately without warping the actual polygon shape (which is hard),
-            # we just scale the square size and gap based on distance, and offset the center.
-            
-            new_cx = 50.0 + dx * (1.0 + 0.3 * np.cos(dist / 60.0 * np.pi/2))
-            new_cy = 50.0 + dy * (1.0 + 0.3 * np.cos(dist / 60.0 * np.pi/2))
-            
-            square_size = (cell_w - gap) * factor
-            
-            # The classic illusion needs sharp edges
-            rect = patches.Rectangle((new_cx, new_cy), square_size, square_size, 
-                                     facecolor='black', edgecolor='none')
-            ax.add_patch(rect)
-            
-            # Add a tiny white dot in the center of the black square to make it pop
-            if dist < 45.0:
-                dot = patches.Circle((new_cx + square_size/2, new_cy + square_size/2), 
-                                     square_size*0.05, facecolor='white', edgecolor='none')
-                ax.add_patch(dot)
+            x_min = -10 + col * cell_w + gap / 2
+            y_min = -10 + row * cell_w + gap / 2
+            x_max = x_min + (cell_w - gap)
+            y_max = y_min + (cell_w - gap)
+
+            # Distort all four corners individually so the squares curve smoothly
+            p1x, p1y, _ = lens(x_min, y_min)   # bottom-left
+            p2x, p2y, _ = lens(x_max, y_min)   # bottom-right
+            p3x, p3y, _ = lens(x_max, y_max)   # top-right
+            p4x, p4y, _ = lens(x_min, y_max)   # top-left
+
+            ax.add_patch(patches.Polygon(
+                [(p1x, p1y), (p2x, p2y), (p3x, p3y), (p4x, p4y)],
+                closed=True, facecolor="black", edgecolor="none"))
+
+            # Adaptive white accent dot at the distorted square centre
+            ccx, ccy, sc = lens((x_min + x_max) / 2, (y_min + y_max) / 2)
+            if 2.0 < ccx < 98.0 and 2.0 < ccy < 98.0:
+                ax.add_patch(patches.Circle(
+                    (ccx, ccy), (cell_w - gap) * 0.05 * sc,
+                    facecolor="white", edgecolor="none"))
+
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 100)
 
     save(fig, "abstract grid tessellation optical illusion hermann grid distortion pattern black white texture")
 

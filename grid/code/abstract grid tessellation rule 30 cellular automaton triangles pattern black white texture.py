@@ -38,70 +38,63 @@ def save(fig, name):
 def draw():
     """
     Rule 30 Cellular Automaton Triangles.
-    A grid visualizing the famous 1D cellular automaton Rule 30, which generates
-    complex, chaotic Sierpinski-like triangle patterns.
+
+    A true 1-D elementary cellular automaton (Wolfram Rule 30) evolved row by
+    row: the next state of a cell is a function of its left/centre/right
+    neighbours in the row above -> 100, 011, 010, 001 become active (1),
+    everything else stays inactive (0). The result is the famous chaotic
+    triangle/pyramid.
+
+    Every cell is drawn as a bordered box with a micro centre dot: active cells
+    are solid black with a white dot, inactive cells are white with a black dot.
+    A wide automaton is computed and the central square is shown, so the pattern
+    fills the 1:1 canvas instead of leaving empty bands.
     """
     fig, ax = setup_ax()
 
     import matplotlib.patches as patches
 
     grid_size = 80
-    cell_size = 120.0 / grid_size
-    
-    # Rule 30 logic
-    # Maps local neighborhood [L, C, R] to new center state
-    # 111 -> 0, 110 -> 0, 101 -> 0, 100 -> 1, 011 -> 1, 010 -> 1, 001 -> 1, 000 -> 0
+    cell_size = 1.0
+    dot_radius = 0.08
+
+    # Rule 30 lookup keyed by (left, centre, right)
     rule = {
-        (1, 1, 1): 0,
-        (1, 1, 0): 0,
-        (1, 0, 1): 0,
-        (1, 0, 0): 1,
-        (0, 1, 1): 1,
-        (0, 1, 0): 1,
-        (0, 0, 1): 1,
-        (0, 0, 0): 0,
+        (1, 1, 1): 0, (1, 1, 0): 0, (1, 0, 1): 0, (1, 0, 0): 1,
+        (0, 1, 1): 1, (0, 1, 0): 1, (0, 0, 1): 1, (0, 0, 0): 0,
     }
-    
-    # We need a wider array to prevent edge wrap-around artifacts
+
+    # Wider array avoids boundary artefacts; the centre square is rendered.
     width = grid_size * 2
     state = np.zeros((grid_size, width), dtype=int)
-    
-    # Initial condition: a single active cell in the center
     state[0, width // 2] = 1
-    
-    # Evolve
+
     for r in range(1, grid_size):
         for c in range(1, width - 1):
-            L = state[r-1, c-1]
-            C = state[r-1, c]
-            R = state[r-1, c+1]
-            state[r, c] = rule[(L, C, R)]
+            state[r, c] = rule[(state[r - 1, c - 1], state[r - 1, c], state[r - 1, c + 1])]
 
-    # Draw the grid
-    # We extract the center portion of the width
     start_c = (width - grid_size) // 2
-    
+
     for r in range(grid_size):
         for c in range(grid_size):
-            val = state[r, start_c + c]
-            
-            x = -10 + c * cell_size
-            y = 110 - r * cell_size - cell_size # Top to bottom
-            
-            if val == 1:
-                # Solid black block
-                rect = patches.Rectangle((x, y), cell_size, cell_size, 
-                                         linewidth=0, facecolor='black')
-                ax.add_patch(rect)
+            x = c * cell_size
+            y = (grid_size - 1 - r) * cell_size   # row 0 on top
+
+            active = state[r, start_c + c]
+
+            if active:
+                ax.add_patch(patches.Rectangle((x, y), cell_size, cell_size,
+                                               facecolor="black", edgecolor="black", linewidth=0.3))
+                ax.add_patch(patches.Circle((x + cell_size / 2, y + cell_size / 2), dot_radius,
+                                            facecolor="white", edgecolor="none"))
             else:
-                # Add a faint dot to white blocks for texture
-                dot = patches.Circle((x + cell_size/2, y + cell_size/2), cell_size*0.1, color='black')
-                ax.add_patch(dot)
-                
-            # Faint grid lines
-            rect_empty = patches.Rectangle((x, y), cell_size, cell_size, 
-                                           linewidth=0.1, edgecolor='black', facecolor='none')
-            ax.add_patch(rect_empty)
+                ax.add_patch(patches.Rectangle((x, y), cell_size, cell_size,
+                                               facecolor="white", edgecolor="black", linewidth=0.3))
+                ax.add_patch(patches.Circle((x + cell_size / 2, y + cell_size / 2), dot_radius,
+                                            facecolor="black", edgecolor="none"))
+
+    ax.set_xlim(0, grid_size * cell_size)
+    ax.set_ylim(0, grid_size * cell_size)
 
     save(fig, "abstract grid tessellation rule 30 cellular automaton triangles pattern black white texture")
 
