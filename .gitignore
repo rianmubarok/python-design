@@ -1,5 +1,8 @@
-# Output files (too large for git)
+# Generated artwork (too large for git)
 output/
+**/submitted/jpg/
+**/submitted/svg/
+**/submitted/eps/
 
 # Python
 __pycache__/
