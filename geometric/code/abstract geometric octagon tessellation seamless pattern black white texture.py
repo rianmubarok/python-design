@@ -108,7 +108,7 @@ def octagon tessellation seamless():
     ax.set xlim(50.0 - pad, 50.0 + pad)
     ax.set ylim(50.0 - pad, 50.0 + pad)
 
-    save(fig, "octagon tessellation seamless")
+    save(fig, "abstract geometric octagon tessellation seamless pattern black white texture"))
 
 
 if   name   == "  main  ":

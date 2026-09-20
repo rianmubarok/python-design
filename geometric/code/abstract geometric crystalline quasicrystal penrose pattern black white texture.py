@@ -105,7 +105,7 @@ def crystalline quasicrystal penrose():
     ax.set xlim(50 - pad, 50 + pad)
     ax.set ylim(50 - pad, 50 + pad)
 
-    save(fig, "crystalline quasicrystal penrose")
+    save(fig, "abstract geometric crystalline quasicrystal penrose pattern black white texture"))
 
 
 if   name   == "  main  ":

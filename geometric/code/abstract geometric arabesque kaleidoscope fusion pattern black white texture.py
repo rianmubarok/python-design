@@ -225,7 +225,7 @@ def arabesque kaleidoscope fusion():
     ax.set xlim(cx final - pad, cx final + pad)
     ax.set ylim(cy final - pad, cy final + pad)
     
-    save(fig, "arabesque kaleidoscope fusion")
+    save(fig, "abstract geometric arabesque kaleidoscope fusion pattern black white texture"))
 
 
 if   name   == "  main  ":

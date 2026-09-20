@@ -265,7 +265,7 @@ def circle packing grid fusion():
     ax.set xlim(cx final - pad, cx final + pad)
     ax.set ylim(cy final - pad, cy final + pad)
     
-    save(fig, "circle packing grid fusion")
+    save(fig, "abstract geometric circle packing grid fusion pattern black white texture"))
 
 
 if   name   == "  main  ":

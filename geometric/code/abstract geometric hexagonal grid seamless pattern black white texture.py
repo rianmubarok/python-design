@@ -191,7 +191,7 @@ def hexagonal grid seamless():
     ax.set ylim(offset y - tile height/2 - display pad,
                 offset y + tile height/2 + display pad)
     
-    save(fig, "hexagonal grid seamless")
+    save(fig, "abstract geometric hexagonal grid seamless pattern black white texture"))
 
 
 if   name   == "  main  ":

@@ -240,7 +240,7 @@ def modular origami crease fold():
             
             ax.plot(arc x, arc y, color="black", linewidth=0.4, alpha=0.6)
     
-    save(fig, "modular origami crease fold")
+    save(fig, "abstract geometric modular origami crease fold pattern black white texture"))
 
 
 if   name   == "  main  ":

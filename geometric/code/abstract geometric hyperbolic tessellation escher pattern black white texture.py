@@ -93,7 +93,7 @@ def hyperbolic tessellation escher():
     ax.set xlim(cx - pad, cx + pad)
     ax.set ylim(cy - pad, cy + pad)
 
-    save(fig, "hyperbolic tessellation escher")
+    save(fig, "abstract geometric hyperbolic tessellation escher pattern black white texture"))
 
 
 if   name   == "  main  ":

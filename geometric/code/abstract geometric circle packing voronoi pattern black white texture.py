@@ -116,7 +116,7 @@ def circle packing voronoi():
     ax.set xlim(50 - pad, 50 + pad)
     ax.set ylim(50 - pad, 50 + pad)
 
-    save(fig, "circle packing voronoi")
+    save(fig, "abstract geometric circle packing voronoi pattern black white texture"))
 
 
 if   name   == "  main  ":

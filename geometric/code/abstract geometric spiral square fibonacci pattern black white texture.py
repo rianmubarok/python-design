@@ -112,7 +112,7 @@ def spiral square fibonacci():
     ax.set xlim(center x - pad, center x + pad)
     ax.set ylim(center y - pad, center y + pad)
 
-    save(fig, "spiral square fibonacci")
+    save(fig, "abstract geometric spiral square fibonacci pattern black white texture"))
 
 
 if   name   == "  main  ":

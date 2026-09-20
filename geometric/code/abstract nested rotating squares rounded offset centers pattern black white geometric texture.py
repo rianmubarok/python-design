@@ -118,7 +118,7 @@ def nested rotating squares rounded offset centers():
     ax.set xlim(cx final - pad, cx final + pad)
     ax.set ylim(cy final - pad, cy final + pad)
     
-    save(fig, "nested rotating squares rounded offset centers")
+    save(fig, "abstract nested rotating squares rounded offset centers pattern black white geometric texture"))
 
 
 if   name   == "  main  ":

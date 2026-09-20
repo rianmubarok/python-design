@@ -87,7 +87,7 @@ def diamond grid offset weave():
     ax.set xlim(cx final - pad, cx final + pad)
     ax.set ylim(cy final - pad, cy final + pad)
 
-    save(fig, "diamond grid offset weave")
+    save(fig, "abstract geometric diamond grid offset weave pattern black white texture"))
 
 
 if   name   == "  main  ":

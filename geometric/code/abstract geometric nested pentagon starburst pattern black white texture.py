@@ -76,7 +76,7 @@ def nested pentagon starburst():
                 ax.plot([start x, end x], [start y, end y], 
                        color="black", linewidth=0.6, alpha=0.7)
     
-    save(fig, "nested pentagon starburst")
+    save(fig, "abstract geometric nested pentagon starburst pattern black white texture"))
 
 
 if   name   == "  main  ":

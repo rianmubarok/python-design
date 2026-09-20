@@ -141,7 +141,7 @@ def rounded polygon morph corner radius():
     ax.set xlim(cx final - pad, cx final + pad)
     ax.set ylim(cy final - pad, cy final + pad)
     
-    save(fig, "rounded polygon morph corner radius")
+    save(fig, "abstract geometric rounded polygon morph corner radius pattern black white texture"))
 
 
 if   name   == "  main  ":

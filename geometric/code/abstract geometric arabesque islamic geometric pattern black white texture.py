@@ -200,7 +200,7 @@ def arabesque islamic geometric():
         
         ax.plot(x 6, y 6, color="black", linewidth=1.0, solid capstyle="round", alpha=0.8)
     
-    save(fig, "arabesque islamic geometric")
+    save(fig, "abstract geometric arabesque islamic geometric pattern black white texture"))
 
 
 if   name   == "  main  ":

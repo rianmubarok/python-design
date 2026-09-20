@@ -97,7 +97,7 @@ def squircle array variable curvature():
     ax.set xlim(cx final - pad, cx final + pad)
     ax.set ylim(cy final - pad, cy final + pad)
     
-    save(fig, "squircle array variable curvature")
+    save(fig, "abstract geometric squircle array variable curvature pattern black white texture"))
 
 
 if   name   == "  main  ":

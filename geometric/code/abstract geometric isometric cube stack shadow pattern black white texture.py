@@ -134,7 +134,7 @@ def isometric cube stack shadow():
     ax.set xlim(center x - pad, center x + pad)
     ax.set ylim(center y - pad, center y + pad)
 
-    save(fig, "isometric cube stack shadow")
+    save(fig, "abstract geometric isometric cube stack shadow pattern black white texture"))
 
 
 if   name   == "  main  ":

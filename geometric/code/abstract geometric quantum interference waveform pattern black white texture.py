@@ -245,7 +245,7 @@ def quantum interference waveform():
     ax.set xlim(cx final - pad, cx final + pad)
     ax.set ylim(cy final - pad, cy final + pad)
     
-    save(fig, "quantum interference waveform")
+    save(fig, "abstract geometric quantum interference waveform pattern black white texture"))
 
 
 if   name   == "  main  ":

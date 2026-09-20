@@ -101,7 +101,7 @@ def rhombus lattice wave deform():
     ax.set xlim(50 - pad, 50 + pad)
     ax.set ylim(50 - pad, 50 + pad)
 
-    save(fig, "rhombus lattice wave deform")
+    save(fig, "abstract geometric rhombus lattice wave deform pattern black white texture"))
 
 
 if   name   == "  main  ":

@@ -52,7 +52,7 @@ def labyrinth():
                 ax.plot([x + cell size, x + cell size], [y, y + cell size], color="black", linewidth=1.2)
             if np.random.random() > 0.3:
                 ax.plot([x, x + cell size], [y + cell size, y + cell size], color="black", linewidth=1.2)
-    save(fig, "labyrinth")
+    save(fig, "abstract labyrinth maze pattern black white geometric texture"))
 
 
 if   name   == "  main  ":

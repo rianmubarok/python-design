@@ -96,7 +96,7 @@ def nested rotating squares offset spiral():
     ax.set xlim(cx final - pad, cx final + pad)
     ax.set ylim(cy final - pad, cy final + pad)
     
-    save(fig, "nested rotating squares offset spiral")
+    save(fig, "abstract nested rotating squares offset spiral pattern black white geometric texture"))
 
 
 if   name   == "  main  ":

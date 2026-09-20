@@ -119,7 +119,7 @@ def star polygon rotation burst():
     ax.set xlim(50 - pad, 50 + pad)
     ax.set ylim(50 - pad, 50 + pad)
 
-    save(fig, "star polygon rotation burst")
+    save(fig, "abstract geometric star polygon rotation burst pattern black white texture"))
 
 
 if   name   == "  main  ":

@@ -87,7 +87,7 @@ def diamond grid compressed density():
     ax.set xlim(cx final - pad, cx final + pad)
     ax.set ylim(cy final - pad, cy final + pad)
 
-    save(fig, "diamond grid compressed density")
+    save(fig, "abstract geometric diamond grid compressed density pattern black white texture"))
 
 
 if   name   == "  main  ":

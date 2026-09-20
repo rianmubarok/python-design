@@ -90,7 +90,7 @@ def diamond grid expanded sparse():
     ax.set xlim(cx final - pad, cx final + pad)
     ax.set ylim(cy final - pad, cy final + pad)
 
-    save(fig, "diamond grid expanded sparse")
+    save(fig, "abstract geometric diamond grid expanded sparse pattern black white texture"))
 
 
 if   name   == "  main  ":

@@ -236,7 +236,7 @@ def triangle hexagon semiregular seamless():
     ax.set ylim(center y - tile height/2 - display pad,
                 center y + tile height/2 + display pad)
     
-    save(fig, "triangle hexagon semiregular seamless")
+    save(fig, "abstract geometric triangle hexagon semiregular seamless pattern black white texture"))
 
 
 if   name   == "  main  ":

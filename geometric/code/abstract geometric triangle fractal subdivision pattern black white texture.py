@@ -102,7 +102,7 @@ def triangle fractal subdivision():
     ax.set xlim(50 - pad, 50 + pad)
     ax.set ylim(50 - pad, 50 + pad)
 
-    save(fig, "triangle fractal subdivision")
+    save(fig, "abstract geometric triangle fractal subdivision pattern black white texture"))
 
 
 if   name   == "  main  ":

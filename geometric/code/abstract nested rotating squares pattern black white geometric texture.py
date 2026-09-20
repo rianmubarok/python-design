@@ -54,7 +54,7 @@ def nested rotating squares():
         ys.append(ys[0])
         lw = 1.0 + 2.0 * (i / n squares)
         ax.plot(xs, ys, color="black", linewidth=lw)
-    save(fig, "nested rotating squares")
+    save(fig, "abstract nested rotating squares pattern black white geometric texture"))
 
 
 if   name   == "  main  ":

@@ -357,7 +357,7 @@ def chaotic strange attractor():
     ax.set xlim(cx final - pad, cx final + pad)
     ax.set ylim(cy final - pad, cy final + pad)
     
-    save(fig, "chaotic strange attractor")
+    save(fig, "abstract geometric chaotic strange attractor pattern black white texture"))
 
 
 if   name   == "  main  ":

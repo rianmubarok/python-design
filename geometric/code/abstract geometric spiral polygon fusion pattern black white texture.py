@@ -256,7 +256,7 @@ def spiral polygon fusion():
     ax.set xlim(cx final - pad, cx final + pad)
     ax.set ylim(cy final - pad, cy final + pad)
     
-    save(fig, "spiral polygon fusion")
+    save(fig, "abstract geometric spiral polygon fusion pattern black white texture"))
 
 
 if   name   == "  main  ":

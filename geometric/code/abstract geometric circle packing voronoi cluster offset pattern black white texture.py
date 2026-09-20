@@ -188,7 +188,7 @@ def circle packing voronoi cluster offset():
     ax.set xlim(50 - pad, 50 + pad)
     ax.set ylim(50 - pad, 50 + pad)
 
-    save(fig, "circle packing voronoi cluster offset")
+    save(fig, "abstract geometric circle packing voronoi cluster offset pattern black white texture"))
 
 
 if   name   == "  main  ":

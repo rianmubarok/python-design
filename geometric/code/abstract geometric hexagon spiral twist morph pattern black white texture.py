@@ -89,7 +89,7 @@ def hexagon spiral twist morph():
     ax.set xlim(cx final - pad, cx final + pad)
     ax.set ylim(cy final - pad, cy final + pad)
 
-    save(fig, "hexagon spiral twist morph")
+    save(fig, "abstract geometric hexagon spiral twist morph pattern black white texture"))
 
 
 if   name   == "  main  ":

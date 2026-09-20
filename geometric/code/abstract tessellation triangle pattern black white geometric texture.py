@@ -49,7 +49,7 @@ def tessellation():
             xs = [p[0] for p in triangle] + [triangle[0][0]]
             ys = [p[1] for p in triangle] + [triangle[0][1]]
             ax.plot(xs, ys, color="black", linewidth=0.8)
-    save(fig, "tessellation")
+    save(fig, "abstract tessellation triangle pattern black white geometric texture"))
 
 
 if   name   == "  main  ":

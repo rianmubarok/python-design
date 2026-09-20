@@ -104,7 +104,7 @@ def kaleidoscope triangle reflection():
     ax.set xlim(50.0 - pad, 50.0 + pad)
     ax.set ylim(50.0 - pad, 50.0 + pad)
 
-    save(fig, "kaleidoscope triangle reflection")
+    save(fig, "abstract geometric kaleidoscope triangle reflection pattern black white texture"))
 
 
 if   name   == "  main  ":

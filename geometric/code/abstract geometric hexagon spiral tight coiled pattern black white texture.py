@@ -95,7 +95,7 @@ def hexagon spiral tight coiled():
     ax.set xlim(cx final - pad, cx final + pad)
     ax.set ylim(cy final - pad, cy final + pad)
 
-    save(fig, "hexagon spiral tight coiled")
+    save(fig, "abstract geometric hexagon spiral tight coiled pattern black white texture"))
 
 
 if   name   == "  main  ":

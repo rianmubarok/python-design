@@ -42,7 +42,7 @@ def herringbone():
         for x in np.arange(-5, 105, spacing * 2):
             ax.plot([x, x + spacing], [y, y + amp], color="black", linewidth=1.2)
             ax.plot([x + spacing, x + spacing * 2], [y + amp, y], color="black", linewidth=1.2)
-    save(fig, "herringbone")
+    save(fig, "abstract herringbone v pattern black white geometric texture"))
 
 
 if   name   == "  main  ":

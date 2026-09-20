@@ -335,7 +335,7 @@ def biomorphic cellular growth():
     ax.set xlim(cx final - pad, cx final + pad)
     ax.set ylim(cy final - pad, cy final + pad)
     
-    save(fig, "biomorphic cellular growth")
+    save(fig, "abstract geometric biomorphic cellular growth pattern black white texture"))
 
 
 if   name   == "  main  ":

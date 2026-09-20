@@ -103,7 +103,7 @@ def polygon morphing chain():
     ax.set xlim(50 - pad, 50 + pad)
     ax.set ylim(50 - pad, 50 + pad)
 
-    save(fig, "polygon morphing chain")
+    save(fig, "abstract geometric polygon morphing chain pattern black white texture"))
 
 
 if   name   == "  main  ":

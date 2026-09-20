@@ -119,7 +119,7 @@ def squircle array extreme curvature():
     ax.set xlim(cx final - pad, cx final + pad)
     ax.set ylim(cy final - pad, cy final + pad)
     
-    save(fig, "squircle array extreme curvature")
+    save(fig, "abstract geometric squircle array extreme curvature pattern black white texture"))
 
 
 if   name   == "  main  ":

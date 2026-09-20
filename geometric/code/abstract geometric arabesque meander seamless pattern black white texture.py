@@ -300,7 +300,7 @@ def arabesque meander seamless():
     ax.set ylim(center y - tile height - display pad,
                 center y + tile height + display pad)
     
-    save(fig, "arabesque meander seamless")
+    save(fig, "abstract geometric arabesque meander seamless pattern black white texture"))
 
 
 if   name   == "  main  ":
