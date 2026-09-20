@@ -16,8 +16,10 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = SCRIPT_DIR.parent / "output"
 JPG_DIR = OUTPUT_DIR / "jpg"
 SVG_DIR = OUTPUT_DIR / "svg"
+EPS_DIR = OUTPUT_DIR / \"eps\"
 JPG_DIR.mkdir(parents=True, exist_ok=True)
 SVG_DIR.mkdir(parents=True, exist_ok=True)
+EPS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def setup_ax():
@@ -36,8 +38,13 @@ def save(fig, name):
     svg_path = SVG_DIR / f"{name} {DATE}.svg"
     fig.savefig(jpg_path, dpi=DPI, pad_inches=0, facecolor="black")
     fig.savefig(svg_path, format="svg", pad_inches=0, facecolor="black")
+    eps_path = EPS_DIR / f\"{name} {DATE}.eps\"
+    orig_size = fig.get_size_inches()
+    fig.set_size_inches(30, 30)
+    fig.savefig(eps_path, format=\"eps\", pad_inches=0, facecolor=\"white\", dpi=DPI)
+    fig.set_size_inches(orig_size[0], orig_size[1])
     plt.close(fig)
-    print(f"Saved: {jpg_path}")
+    print(f"Saved: {jpg_path} | {svg_path} | {eps_path}")
 
 
 def picket_post(ax, cx, base_y, post_w, post_h, fill="white"):
