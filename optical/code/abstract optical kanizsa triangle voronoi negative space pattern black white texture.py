@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.spatial import Voronoi, voronoi_plot_2d
+from scipy.spatial import Voronoi
 from matplotlib.patches import Wedge, Polygon
 from pathlib import Path
 from datetime import datetime
@@ -40,72 +40,74 @@ def save(fig, name):
     print(f"Tersimpan: {jpg_path} | {svg_path}")
 
 
+def draw_pacman_towards_center(ax, center_pt, target_pt, radius=10.0, f_angle=60):
+    dx = target_pt[0] - center_pt[0]
+    dy = target_pt[1] - center_pt[1]
+    angle_to_target = np.degrees(np.arctan2(dy, dx))
+
+    theta1 = angle_to_target + (f_angle / 2)
+    theta2 = angle_to_target + 360 - (f_angle / 2)
+
+    w = Wedge(
+        center_pt,
+        radius,
+        theta1,
+        theta2,
+        facecolor="black",
+        edgecolor="black",
+        linewidth=0.5,
+        zorder=3,
+    )
+    ax.add_patch(w)
+
+
 def abstract_optical_kanizsa_triangle_voronoi_negative_space_pattern_black_white_texture():
-    """Optical experiment: Kanizsa negative space illusion built from a Voronoi cell lattice and Pac-Man notches."""
     fig, ax = setup_ax()
 
-    # Generate relaxed Voronoi points
-    n_points = 35
-    points = np.random.uniform(-40, 40, (n_points, 2))
-
-    # Lloyd relaxation step
+    # 1. Generate Voronoi Grid Background
+    n_points = 180
+    points = np.random.uniform(-55, 55, (n_points, 2))
     vor = Voronoi(points)
-    centroids = []
-    for region_idx in vor.point_region:
-        region = vor.regions[region_idx]
-        if not region or -1 in region:
-            continue
-        polygon = vor.vertices[region]
-        centroids.append(polygon.mean(axis=0))
-    if len(centroids) > 0:
-        points = np.array(centroids)
-        vor = Voronoi(points)
 
-    # Plot Voronoi edges with bold black lines
     for line in vor.ridge_vertices:
         if -1 not in line:
             p1 = vor.vertices[line[0]]
             p2 = vor.vertices[line[1]]
-            if (
-                np.all(np.abs(p1) < 48)
-                and np.all(np.abs(p2) < 48)
-            ):
+            if np.all(np.abs(p1) < 52) and np.all(np.abs(p2) < 52):
                 ax.plot(
-                    [p1[0], p2[0]], [p1[1], p2[1]], color="black", linewidth=1.5
+                    [p1[0], p2[0]], [p1[1], p2[1]], color="black", linewidth=0.8, alpha=0.75, zorder=1
                 )
 
-    # Place Kanizsa Pac-Man discs at triangle vertices to induce subjective white triangles in negative space
-    triangle_centers = [(-22, -10), (22, -10), (0, 26)]
-    triangle_orientations = [60, 180, 300]  # Cut angles towards triangle center
+    # 2. Koordinat Segitiga Utama
+    side_len = 50.0
+    h = side_len * np.sqrt(3) / 2
+    cy_offset = -4.0
 
-    for (cx, cy), notch_angle in zip(triangle_centers, triangle_orientations):
-        # Draw Pac-Man disc with missing 60-degree wedge
-        r = 9.5
-        w = Wedge(
-            (cx, cy),
-            r,
-            notch_angle + 30,
-            notch_angle + 330,
-            facecolor="black",
-            edgecolor="black",
-        )
-        ax.add_patch(w)
+    A = np.array([0.0, cy_offset + h * (2 / 3)])
+    B = np.array([-side_len / 2, cy_offset - h * (1 / 3)])
+    C = np.array([side_len / 2, cy_offset - h * (1 / 3)])
+    tri_center = (A + B + C) / 3.0
 
-    # Secondary smaller inverted subjective triangle Pac-Mans
-    sub_centers = [(-11, 12), (11, 12), (0, -7)]
-    sub_orientations = [240, 0, 120]
+    # 3. Menutupi area segitiga dengan warna putih polos (Masking) agar ilusi timbul
+    triangle_patch = Polygon([A, B, C], facecolor="white", edgecolor="none", zorder=2)
+    ax.add_patch(triangle_patch)
 
-    for (cx, cy), notch_angle in zip(sub_centers, sub_orientations):
-        r = 5.0
-        w = Wedge(
-            (cx, cy),
-            r,
-            notch_angle + 30,
-            notch_angle + 330,
-            facecolor="black",
-            edgecolor="black",
-        )
-        ax.add_patch(w)
+    # 4. Gambar Pac-Man Utama (Besar)
+    r_main = 11.5
+    draw_pacman_towards_center(ax, A, tri_center, radius=r_main, f_angle=60)
+    draw_pacman_towards_center(ax, B, tri_center, radius=r_main, f_angle=60)
+    draw_pacman_towards_center(ax, C, tri_center, radius=r_main, f_angle=60)
+
+    # 5. Segitiga Sekunder Kecil Terbalik
+    A_sub = np.array([0.0, cy_offset - h * (1 / 3)])
+    B_sub = np.array([-side_len / 4, cy_offset + h * (1 / 6)])
+    C_sub = np.array([side_len / 4, cy_offset + h * (1 / 6)])
+    sub_center = (A_sub + B_sub + C_sub) / 3.0
+
+    r_sub = 5.5
+    draw_pacman_towards_center(ax, A_sub, sub_center, radius=r_sub, f_angle=60)
+    draw_pacman_towards_center(ax, B_sub, sub_center, radius=r_sub, f_angle=60)
+    draw_pacman_towards_center(ax, C_sub, sub_center, radius=r_sub, f_angle=60)
 
     save(
         fig,

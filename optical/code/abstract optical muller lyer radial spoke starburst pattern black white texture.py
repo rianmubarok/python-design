@@ -38,53 +38,53 @@ def save(fig, name):
     print(f"Tersimpan: {jpg_path} | {svg_path}")
 
 
+def draw_chevron(ax, x, y, ray_angle, is_inward, fin_len=4.5, fin_angle=np.radians(35)):
+    """Menggambar sirip panah Müller-Lyer dengan sudut presisi."""
+    # Arah dasar panah
+    base_dir = ray_angle if is_inward else ray_angle + np.pi
+
+    # Dua lengan sirip panah
+    a1 = base_dir + fin_angle
+    a2 = base_dir - fin_angle
+
+    p1 = [x + fin_len * np.cos(a1), y + fin_len * np.sin(a1)]
+    p2 = [x + fin_len * np.cos(a2), y + fin_len * np.sin(a2)]
+
+    ax.plot([p1[0], x, p2[0]], [p1[1], y, p2[1]], color="black", linewidth=1.8, zorder=3)
+
+
 def generate():
-    """Muller-Lyer arranged radially — segments emanate outward from center with alternating chevrons."""
+    """Radial Müller-Lyer optical illusion starburst pattern filling full canvas."""
     fig, ax = setup_ax()
 
-    n_rays = 24
-    line_len = 16.0
-    arrow_size = 3.0
-    inner_r = 6.0
+    n_rays = 20
+    inner_r = 12.0  # Diperbesar agar bagian dalam tidak saling menindih
+    outer_r = 46.0  # Memenuhi canvas hingga mendekati tepi
 
     for i in range(n_rays):
         angle = i * 2 * np.pi / n_rays
 
-        # Segment along the ray
         x1 = inner_r * np.cos(angle)
         y1 = inner_r * np.sin(angle)
-        x2 = (inner_r + line_len) * np.cos(angle)
-        y2 = (inner_r + line_len) * np.sin(angle)
-        ax.plot([x1, x2], [y1, y2], color="black", linewidth=2.2)
+        x2 = outer_r * np.cos(angle)
+        y2 = outer_r * np.sin(angle)
 
-        # Perpendicular direction for chevrons
-        perp_angle = angle + np.pi / 2
-        px = np.cos(perp_angle)
-        py = np.sin(perp_angle)
+        # 1. Gambar Garis Sinar Utama (Panjang sama persis untuk semua sinar)
+        ax.plot([x1, x2], [y1, y2], color="black", linewidth=2.2, zorder=2)
 
+        # 2. Gambar Sirip Panah (Berselang-seling: Inward vs Outward)
         inward = i % 2 == 0
-        dir1 = 1 if inward else -1
-        dir2 = -1 if inward else 1
 
-        # Inner end chevrons
-        ax.plot([x1 + dir1 * arrow_size * np.cos(angle) + arrow_size * px,
-                 x1,
-                 x1 + dir1 * arrow_size * np.cos(angle) - arrow_size * px],
-                [y1 + dir1 * arrow_size * np.sin(angle) + arrow_size * py,
-                 y1,
-                 y1 + dir1 * arrow_size * np.sin(angle) - arrow_size * py],
-                color="black", linewidth=1.8)
+        # Ujung Dalam
+        draw_chevron(ax, x1, y1, angle, is_inward=inward)
 
-        # Outer end chevrons
-        ax.plot([x2 + dir2 * arrow_size * np.cos(angle) + arrow_size * px,
-                 x2,
-                 x2 + dir2 * arrow_size * np.cos(angle) - arrow_size * px],
-                [y2 + dir2 * arrow_size * np.sin(angle) + arrow_size * py,
-                 y2,
-                 y2 + dir2 * arrow_size * np.sin(angle) - arrow_size * py],
-                color="black", linewidth=1.8)
+        # Ujung Luar
+        draw_chevron(ax, x2, y2, angle, is_inward=not inward)
 
-    save(fig, "abstract optical muller lyer radial spoke starburst pattern black white texture")
+    save(
+        fig,
+        "abstract optical muller lyer radial spoke starburst pattern black white texture",
+    )
 
 
 if __name__ == "__main__":

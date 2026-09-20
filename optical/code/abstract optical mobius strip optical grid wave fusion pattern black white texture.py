@@ -39,55 +39,60 @@ def save(fig, name):
 
 
 def abstract_optical_mobius_strip_optical_grid_wave_fusion_pattern_black_white_texture():
-    """Wild Optical Fusion: 3D Möbius strip surface mapped with an Op-Art checkerboard wave distortion."""
+    """3D Möbius strip surface mapped with clear grid structure and wave distortion."""
     fig, ax = setup_ax()
 
-    u = np.linspace(0, 2 * np.pi, 240)
-    v = np.linspace(-0.6, 0.6, 60)
+    # 1. Parameter Grid Pita Möbius (Diperjarang agar tidak menumpuk pekat)
+    u = np.linspace(0, 2 * np.pi, 180)
+    v = np.linspace(-0.55, 0.55, 20)
     U, V = np.meshgrid(u, v)
 
-    # Parametric Möbius strip coordinates
+    # Koordinat Parametrik Möbius Strip
     X = (1 + (V / 2) * np.cos(U / 2)) * np.cos(U)
     Y = (1 + (V / 2) * np.cos(U / 2)) * np.sin(U)
     Z = (V / 2) * np.sin(U / 2)
 
-    # Rotate 3D strip into 2D perspective projection
-    angle_x = np.radians(35)
-    angle_z = np.radians(45)
+    # 2. Sudut Rotasi Perspektif 3D yang Menampakkan Puntiran Möbius Tegas
+    angle_x = np.radians(60)
+    angle_z = np.radians(30)
 
-    # Z-rotation
+    # Rotasi terhadap Sumbu Z
     X_rot = X * np.cos(angle_z) - Y * np.sin(angle_z)
     Y_rot = X * np.sin(angle_z) + Y * np.cos(angle_z)
     Z_rot = Z
 
-    # X-rotation
-    Y_proj = Y_rot * np.cos(angle_x) - Z_rot * np.sin(angle_x)
+    # Rotasi terhadap Sumbu X
     X_proj = X_rot
+    Y_proj = Y_rot * np.cos(angle_x) - Z_rot * np.sin(angle_x)
 
-    # Render grid isolines with wave phase modulation creating optical illusion
-    for i in range(V.shape[0]):
-        # Modulate stroke width along u
-        lw = 1.0 + 1.2 * np.sin(u * 3 + i * 0.2) ** 2
-        ax.plot(
-            X_proj[i, :], Y_proj[i, :], color="black", linewidth=1.2, alpha=0.85
-        )
-
-    for j in range(0, U.shape[1], 4):
-        ax.plot(
-            X_proj[:, j], Y_proj[:, j], color="black", linewidth=1.0, alpha=0.85
-        )
-
-    # Superimpose Op-Art concentric wave lines
-    r_vals = np.linspace(0.2, 2.0, 18)
-    theta_pts = np.linspace(0, 2 * np.pi, 300)
-    for r in r_vals:
-        wave_r = r + 0.08 * np.sin(8 * theta_pts)
+    # 3. Render Garis-Garis Gelombang Latar Belakang Op-Art
+    r_vals = np.linspace(0.15, 2.1, 24)
+    theta_pts = np.linspace(0, 2 * np.pi, 400)
+    for idx, r in enumerate(r_vals):
+        wave_r = r + 0.06 * np.sin(10 * theta_pts + idx * 0.2)
         ax.plot(
             wave_r * np.cos(theta_pts),
             wave_r * np.sin(theta_pts),
             color="black",
-            linewidth=0.9,
-            linestyle="--",
+            linewidth=0.6,
+            linestyle="--" if idx % 2 == 0 else "-",
+            alpha=0.45,
+            zorder=1,
+        )
+
+    # 4. Render Grid Permukaan Möbius Strip (Panjang & Lebar)
+    # Garis Memanjang (Longitudinal)
+    for i in range(V.shape[0]):
+        # Modulasi ketebalan garis secara dinamis
+        lw = 0.5 + 0.6 * np.sin(i * 0.3) ** 2
+        ax.plot(
+            X_proj[i, :], Y_proj[i, :], color="black", linewidth=lw, alpha=0.9, zorder=3
+        )
+
+    # Garis Melintang (Transversal)
+    for j in range(0, U.shape[1], 3):
+        ax.plot(
+            X_proj[:, j], Y_proj[:, j], color="black", linewidth=0.7, alpha=0.9, zorder=2
         )
 
     save(

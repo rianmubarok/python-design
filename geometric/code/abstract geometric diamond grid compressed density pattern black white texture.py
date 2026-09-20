@@ -1,94 +1,101 @@
 from datetime import datetime
 from pathlib import Path
-import matplotlib.pyplot as plt
-import numpy as np
 import matplotlib
 
 matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
 SIZE = 4000
 DPI = 300
 DATE = datetime.now().strftime("%d%m%Y")
+PERIOD = 1.0
 
-SCRIPT DIR = Path(  file  ).resolve().parent
-OUTPUT DIR = SCRIPT DIR.parent / "output"
-JPG DIR = OUTPUT DIR / "jpg"
-SVG DIR = OUTPUT DIR / "svg"
-JPG DIR.mkdir(parents=True, exist ok=True)
-SVG DIR.mkdir(parents=True, exist ok=True)
+SCRIPT_DIR = Path(__file__).resolve().parent
+OUTPUT_DIR = SCRIPT_DIR.parent / "output"
+JPG_DIR = OUTPUT_DIR / "jpg"
+SVG_DIR = OUTPUT_DIR / "svg"
+EPS_DIR = OUTPUT_DIR / "eps"
+JPG_DIR.mkdir(parents=True, exist_ok=True)
+SVG_DIR.mkdir(parents=True, exist_ok=True)
+EPS_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def setup ax():
+def setup_ax():
     fig, ax = plt.subplots(figsize=(SIZE / DPI, SIZE / DPI), dpi=DPI)
-    fig.subplots adjust(left=0, right=1, top=1, bottom=0)
-    ax.set facecolor("white")
-    ax.set aspect("equal")
+    fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    ax.set_position([0, 0, 1, 1])
+    ax.set_facecolor("white")
+    ax.set_xlim(0, PERIOD)
+    ax.set_ylim(0, PERIOD)
+    ax.set_aspect("equal", adjustable="box")
     ax.axis("off")
+    ax.margins(0)
     return fig, ax
 
 
 def save(fig, name):
-    jpg path = JPG DIR / f"{name} {DATE}.jpg"
-    svg path = SVG DIR / f"{name} {DATE}.svg"
-    fig.savefig(jpg path, dpi=DPI, pad inches=0, facecolor="white")
-    fig.savefig(svg path, format="svg", pad inches=0, facecolor="white")
+    jpg_path = JPG_DIR / f"{name} {DATE}.jpg"
+    svg_path = SVG_DIR / f"{name} {DATE}.svg"
+    eps_path = EPS_DIR / f"{name} {DATE}.eps"
+    fig.savefig(jpg_path, dpi=DPI, pad_inches=0, facecolor="white")
+    fig.savefig(svg_path, format="svg", pad_inches=0, facecolor="white")
+    orig_size = fig.get_size_inches()
+    fig.set_size_inches(30, 30)
+    fig.savefig(eps_path, format="eps", pad_inches=0, facecolor="white", dpi=DPI)
+    fig.set_size_inches(orig_size[0], orig_size[1])
     plt.close(fig)
-    print(f"Tersimpan: {jpg path} | {svg path}")
+    print(f"Tersimpan: {jpg_path} | {svg_path} | {eps_path}")
 
 
-def draw diamond(cx, cy, w, h):
-    """Menggambar belah ketupat (diamond) berpusat di (cx, cy)."""
-    x = [cx, cx + w / 2.0, cx, cx - w / 2.0, cx]
-    y = [cy + h / 2.0, cy, cy - h / 2.0, cy, cy + h / 2.0]
-    return x, y
+def plot_wrapped(ax, xs, ys, **kwargs):
+    for dx in (-PERIOD, 0.0, PERIOD):
+        for dy in (-PERIOD, 0.0, PERIOD):
+            ax.plot(
+                [x + dx for x in xs],
+                [y + dy for y in ys],
+                **kwargs,
+            )
 
 
-def diamond grid compressed density():
-    """Teselasi belah ketupat dengan kepadatan tinggi dan dimensi terkompresi."""
-    fig, ax = setup ax()
+def diamond_points(cx, cy, w, h):
+    return (
+        [cx, cx + w / 2.0, cx, cx - w / 2.0, cx],
+        [cy + h / 2.0, cy, cy - h / 2.0, cy, cy + h / 2.0],
+    )
 
-    # Dimensi belah ketupat yang lebih kecil untuk kepadatan tinggi
-    w = 4.0  # Lebih sempit dari aslinya (6.0)
-    h = 5.0  # Lebih pendek dari aslinya (8.0)
 
-    cols = 30  # Lebih banyak kolom
-    rows = 30  # Lebih banyak baris
+def diamond_grid_compressed_density():
+    """Teselasi belah ketupat rapat saling tumpang, full canvas, seamless."""
+    fig, ax = setup_ax()
 
-    # Jarak kisi yang lebih rapat
-    step x = w * 0.9  # 90% dari lebar untuk tumpang tindih minimal
-    step y = h / 2.0 * 0.85  # 85% dari tinggi setengah untuk kompresi vertikal
+    cols = 24
+    rows = 30
+    step_x = PERIOD / cols
+    step_y = PERIOD / rows
+    w = step_x / 0.9
+    h = 2.0 * step_y / 0.85
 
-    min x, max x = float("inf"), float("-inf")
-    min y, max y = float("inf"), float("-inf")
-
-    for r in range(rows):
-        for c in range(cols):
-            cx = c * step x
+    for r in range(-1, rows + 1):
+        for c in range(-1, cols + 1):
+            cx = c * step_x
             if r % 2 != 0:
-                cx += step x / 2.0
-            cy = r * step y
+                cx += step_x / 2.0
+            cy = r * step_y
+            xs, ys = diamond_points(cx, cy, w, h)
+            lw = 0.55 + 0.22 * (r % 3)
+            plot_wrapped(
+                ax,
+                xs,
+                ys,
+                color="black",
+                linewidth=lw,
+                solid_capstyle="round",
+                solid_joinstyle="miter",
+                clip_on=True,
+            )
 
-            x pts, y pts = draw diamond(cx, cy, w, h)
-
-            min x, max x = min(min x, min(x pts)), max(max x, max(x pts))
-            min y, max y = min(min y, min(y pts)), max(max y, max(y pts))
-
-            # Variasi ketebalan garis yang lebih halus untuk kepadatan tinggi
-            lw = 0.6 + 0.2 * (r % 3)  # Variasi subtil berdasarkan modulo 3
-            ax.plot(x pts, y pts, color="black", linewidth=lw, solid capstyle="round")
-
-    # Framing simetris dengan padding yang lebih ketat
-    cx final = (min x + max x) / 2.0
-    cy final = (min y + max y) / 2.0
-    span w = max x - min x
-    span h = max y - min y
-    pad = max(span w, span h) / 2.0 + 1.0  # Padding minimal
-
-    ax.set xlim(cx final - pad, cx final + pad)
-    ax.set ylim(cy final - pad, cy final + pad)
-
-    save(fig, "abstract geometric diamond grid compressed density pattern black white texture"))
+    save(fig, "abstract geometric diamond grid compressed density pattern black white texture")
 
 
-if   name   == "  main  ":
-    diamond grid compressed density()
+if __name__ == "__main__":
+    diamond_grid_compressed_density()

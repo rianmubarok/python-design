@@ -35,90 +35,113 @@ def save(fig, name):
     print(f"Tersimpan: {jpg_path} | {svg_path}")
 
 
+def fill_quad_with_lines(ax, p1, p2, p3, p4, n_lines=15, linewidth=0.2):
+    """
+    Mengisi bidang segi empat (quadrilateral) p1-p2-p3-p4 dengan garis paralel
+    secara presisi dari garis (p1->p2) menuju garis (p4->p3).
+    """
+    for i in range(n_lines):
+        t = i / (n_lines - 1) if n_lines > 1 else 0.5
+        # Interpolasi titik awal dan akhir garis di dalam bidang
+        start_pt = (1 - t) * p1 + t * p4
+        end_pt = (1 - t) * p2 + t * p3
+        ax.plot(
+            [start_pt[0], end_pt[0]],
+            [start_pt[1], end_pt[1]],
+            color="black",
+            linewidth=linewidth,
+            solid_capstyle="round",
+            alpha=0.6,
+        )
+
+
 def draw():
     """
-    Tesseract (4D hypercube) projected into 2D using parallel perspective.
-    Multiple nested cubes connected by parallel edges, with additional
-    parallel line fills along each face to create the pattern texture.
+    Proyeksi Tesseract (4D hypercube) presisi ke 2D menggunakan rotasi 4D 
+    dengan isian garis-garis paralel rapi pada tiap sisi/wajah bidangnya.
     """
     fig, ax = setup_ax()
 
-    cx, cy = 50.0, 50.0
+    # 1. Buat 16 titik sudut (vertices) dari Hiperkubus 4D
+    vertices_4d = []
+    for i in range(16):
+        x = 1 if (i & 1) else -1
+        y = 1 if (i & 2) else -1
+        z = 1 if (i & 4) else -1
+        w = 1 if (i & 8) else -1
+        vertices_4d.append([x, y, z, w])
+    vertices_4d = np.array(vertices_4d, dtype=float)
 
-    # Generate multiple nested tesseract-like projections
-    n_layers = 12
-    for layer in range(n_layers):
-        t = layer / (n_layers - 1)
-        # Outer cube size
-        s_outer = 48 - 38 * t
-        # Inner cube size (offset for 4D projection)
-        s_inner = s_outer * 0.55
-        # Offset of inner cube center from outer
-        offset = s_outer * 0.2 * (1 - t * 0.3)
+    # 2. Matriks Rotasi 4D untuk mendapatkan sudut pandang presisi & artistik
+    angle = np.pi / 5
+    rot_xz = np.array([
+        [np.cos(angle), 0, -np.sin(angle), 0],
+        [0, 1, 0, 0],
+        [np.sin(angle), 0, np.cos(angle), 0],
+        [0, 0, 0, 1]
+    ])
+    rot_yw = np.array([
+        [1, 0, 0, 0],
+        [0, np.cos(angle * 0.7), 0, -np.sin(angle * 0.7)],
+        [0, 0, 1, 0],
+        [0, np.sin(angle * 0.7), 0, np.cos(angle * 0.7)]
+    ])
 
-        # Outer square corners
-        o_corners = np.array([
-            [cx - s_outer, cy - s_outer],
-            [cx + s_outer, cy - s_outer],
-            [cx + s_outer, cy + s_outer],
-            [cx - s_outer, cy + s_outer],
-        ])
+    rotated_4d = vertices_4d @ rot_xz @ rot_yw
 
-        # Inner square corners (offset up-right for perspective)
-        icx = cx + offset
-        icy = cy + offset
-        i_corners = np.array([
-            [icx - s_inner, icy - s_inner],
-            [icx + s_inner, icy - s_inner],
-            [icx + s_inner, icy + s_inner],
-            [icx - s_inner, icy + s_inner],
-        ])
+    # 3. Proyeksi Perspektif 4D -> 3D -> 2D
+    projected_2d = []
+    distance_4d = 2.8
+    distance_3d = 2.5
 
-        lw = 0.3 + 0.4 * (1 - t)
+    for v in rotated_4d:
+        # 4D -> 3D
+        w_factor = 1 / (distance_4d - v[3])
+        x3, y3, z3 = v[0] * w_factor, v[1] * w_factor, v[2] * w_factor
 
-        # Draw outer square
-        for k in range(4):
-            p1 = o_corners[k]
-            p2 = o_corners[(k + 1) % 4]
-            ax.plot([p1[0], p2[0]], [p1[1], p2[1]], color="black",
-                    linewidth=lw, solid_capstyle="round")
+        # 3D -> 2D
+        z_factor = 1 / (distance_3d - z3)
+        x2, y2 = x3 * z_factor, y3 * z_factor
+        projected_2d.append([x2, y2])
 
-        # Draw inner square
-        for k in range(4):
-            p1 = i_corners[k]
-            p2 = i_corners[(k + 1) % 4]
-            ax.plot([p1[0], p2[0]], [p1[1], p2[1]], color="black",
-                    linewidth=lw, solid_capstyle="round")
+    projected_2d = np.array(projected_2d)
 
-        # Connect corresponding corners (the 4D projection edges)
-        for k in range(4):
-            ax.plot([o_corners[k, 0], i_corners[k, 0]],
-                    [o_corners[k, 1], i_corners[k, 1]],
-                    color="black", linewidth=lw * 0.7, solid_capstyle="round")
+    # Normalisasi skala ke dalam ruang koordinat canvas (-5 sampai 105, pusat di 50,50)
+    projected_2d = projected_2d * 60 + 50
 
-    # Add parallel fill lines across the top face of the outermost cube
-    n_fill = 30
-    s0 = 48
-    offset0 = s0 * 0.2
-    for i in range(n_fill):
-        t = i / (n_fill - 1)
-        # Interpolate between outer top edge and inner top edge
-        x1 = cx - s0 + t * (cx + offset0 - s0 * 0.55 - (cx - s0))
-        y1 = cy + s0 + t * (cy + offset0 + s0 * 0.55 - (cy + s0))
-        x2 = cx + s0 + t * (cx + offset0 + s0 * 0.55 - (cx + s0))
-        y2 = y1
-        ax.plot([x1, x2], [y1, y2], color="black", linewidth=0.2,
-                solid_capstyle="round")
+    # 4. Gambar Arsir Garis Paralel pada Wajah-Wajah Kubus Outer & Inner
+    # Pasangan wajah (faces) utama untuk tekstur paralel
+    faces = [
+        [0, 1, 3, 2],    # Depan
+        [4, 5, 7, 6],    # Belakang
+        [8, 9, 11, 10],  # Depan 4D
+        [12, 13, 15, 14],# Belakang 4D
+        [0, 1, 9, 8],    # Penghubung 4D bawah
+        [2, 3, 11, 10],  # Penghubung 4D atas
+    ]
 
-    # Add parallel fill lines across the right face
-    for i in range(n_fill):
-        t = i / (n_fill - 1)
-        x1 = cx + s0 + t * (cx + offset0 + s0 * 0.55 - (cx + s0))
-        y1 = cy - s0 + t * (cy + offset0 - s0 * 0.55 - (cy - s0))
-        x2 = x1
-        y2 = cy + s0 + t * (cy + offset0 + s0 * 0.55 - (cy + s0))
-        ax.plot([x1, x2], [y1, y2], color="black", linewidth=0.2,
-                solid_capstyle="round")
+    for face in faces:
+        p1, p2, p3, p4 = (
+            projected_2d[face[0]],
+            projected_2d[face[1]],
+            projected_2d[face[2]],
+            projected_2d[face[3]],
+        )
+        fill_quad_with_lines(ax, p1, p2, p3, p4, n_lines=18, linewidth=0.25)
+
+    # 5. Gambar Rusuk (Edges) Utama Tesseract (32 Rusuk)
+    for i in range(16):
+        for j in range(i + 1, 16):
+            # Rusuk ada jika hanya 1 koordinat bernilai beda
+            if np.sum(np.abs(vertices_4d[i] - vertices_4d[j]) == 2) == 1:
+                p1, p2 = projected_2d[i], projected_2d[j]
+                ax.plot(
+                    [p1[0], p2[0]],
+                    [p1[1], p2[1]],
+                    color="black",
+                    linewidth=0.8,
+                    solid_capstyle="round",
+                )
 
     save(fig, "abstract parallel lines tesseract hypercube projection pattern black white texture")
 

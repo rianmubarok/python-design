@@ -14,6 +14,18 @@ SVG_DIR = OUTPUT_DIR / "svg"
 JPG_DIR.mkdir(parents=True, exist_ok=True)
 SVG_DIR.mkdir(parents=True, exist_ok=True)
 
+# The three visible faces of a Penrose tribar (isometric), each an L-shaped
+# hexagon. They tile the figure edge-to-edge with no overlap. Angle = hatch
+# direction, aligned with the long arm of each face.
+PENROSE_FACES = [
+    ([(312.32408, 254.29303), (497.87767, 584.55178), (291.61277, 584.66663),
+      (252.04899, 655.38029), (617.26698, 655.43727), (394.46457, 254.0866)], 120.0),
+    ([(312.31392, 254.26591), (91.923882, 655.37223), (132.32998, 728.10322),
+      (315.16759, 396.77318), (417.193, 584.66155), (498.0052, 584.66155)], 60.0),
+    ([(315.20979, 396.83568), (355.50104, 471.05493), (251.87272, 655.43409),
+      (617.28788, 655.62366), (578.81741, 730.12352), (132.3464, 728.07665)], 0.0),
+]
+
 
 def setup_ax():
     fig, ax = plt.subplots(figsize=(SIZE / DPI, SIZE / DPI), dpi=DPI)
@@ -35,85 +47,67 @@ def save(fig, name):
     print(f"Tersimpan: {jpg_path} | {svg_path}")
 
 
+def make_transform(faces):
+    """Fit/flip the raw figure onto the 0-100 drawing area, centred in canvas."""
+    pts = [(x, -y) for poly, _ in faces for (x, y) in poly]
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
+    cx, cy = (minx + maxx) / 2, (miny + maxy) / 2
+    scale = 100.0 / max(maxx - minx, maxy - miny)
+
+    def transform(p):
+        x, y = p
+        return (50 + (x - cx) * scale, 50 + (-y - cy) * scale)
+
+    return transform
+
+
+def hatch_polygon(ax, poly, angle_deg, spacing, linewidth):
+    """Fill a (possibly concave) polygon with parallel lines via scanline."""
+    q = np.asarray(poly, dtype=float)
+    a = np.radians(angle_deg)
+    ca, sa = np.cos(a), np.sin(a)
+    q = q @ np.array([[ca, sa], [-sa, ca]]).T
+    ymin, ymax = q[:, 1].min(), q[:, 1].max()
+    n = len(q)
+    for y in np.arange(ymin + spacing * 0.5, ymax, spacing):
+        xs = []
+        for i in range(n):
+            y1, y2 = q[i, 1], q[(i + 1) % n, 1]
+            if (y1 <= y < y2) or (y2 <= y < y1):
+                t = (y - y1) / (y2 - y1)
+                xs.append(q[i, 0] + t * (q[(i + 1) % n, 0] - q[i, 0]))
+        xs.sort()
+        for j in range(0, len(xs) - 1, 2):
+            x1, x2 = xs[j], xs[j + 1]
+            if x2 - x1 < 1e-9:
+                continue
+            ax.plot(
+                [ca * x1 - sa * y, ca * x2 - sa * y],
+                [sa * x1 + ca * y, sa * x2 + ca * y],
+                color="black",
+                linewidth=linewidth,
+                solid_capstyle="butt",
+            )
+
+
 def draw():
-    """
-    Penrose impossible triangle built entirely from parallel lines.
-    Three beams of tightly packed parallel lines form the sides of the triangle,
-    with the impossible overlap/underpass at each corner creating the paradox.
-    Multiple nested impossible triangles at different scales.
-    """
+    """Penrose impossible triangle paradox pattern built from parallel lines."""
     fig, ax = setup_ax()
+    transform = make_transform(PENROSE_FACES)
 
-    cx, cy = 50.0, 48.0
-
-    def draw_penrose_triangle(cx, cy, size, n_lines, lw):
-        """Draw one impossible triangle of given size filled with parallel lines."""
-        # Triangle vertices (equilateral, pointing up)
-        h = size * np.sqrt(3) / 2
-        # Outer triangle
-        A = np.array([cx, cy + h * 0.6])           # top
-        B = np.array([cx - size / 2, cy - h * 0.4])  # bottom-left
-        C = np.array([cx + size / 2, cy - h * 0.4])  # bottom-right
-
-        beam_width = size * 0.12
-
-        # For each side, draw parallel lines along the beam
-        sides = [(A, B), (B, C), (C, A)]
-
-        for side_idx, (p1, p2) in enumerate(sides):
-            direction = p2 - p1
-            length = np.linalg.norm(direction)
-            d_unit = direction / length
-            # Normal to the side (perpendicular)
-            n_unit = np.array([-d_unit[1], d_unit[0]])
-
-            for k in range(n_lines):
-                t = (k / (n_lines - 1) - 0.5) * beam_width
-                # Offset line parallel to the side
-                start = p1 + n_unit * t
-                end = p2 + n_unit * t
-
-                # Shorten lines at corners to create the impossible overlap
-                # Trim start by a fraction and end by a fraction
-                trim_start = 0.08
-                trim_end = 0.08
-                start_trimmed = start + d_unit * length * trim_start
-                end_trimmed = end - d_unit * length * trim_end
-
-                ax.plot([start_trimmed[0], end_trimmed[0]],
-                        [start_trimmed[1], end_trimmed[1]],
-                        color="black", linewidth=lw, solid_capstyle="butt")
-
-        # Draw corner overlaps to create the impossible illusion
-        for corner_idx in range(3):
-            p_corner = [A, B, C][corner_idx]
-            p_prev = [C, A, B][corner_idx]
-            p_next = [B, C, A][corner_idx]
-
-            # Draw short connecting lines at corners
-            d1 = (p_prev - p_corner)
-            d1 = d1 / np.linalg.norm(d1)
-            d2 = (p_next - p_corner)
-            d2 = d2 / np.linalg.norm(d2)
-
-            for k in range(n_lines):
-                t = (k / (n_lines - 1) - 0.5) * beam_width
-                n1 = np.array([-d1[1], d1[0]])
-                pt1 = p_corner + d1 * beam_width * 0.8 + n1 * t
-
-                n2 = np.array([-d2[1], d2[0]])
-                pt2 = p_corner + d2 * beam_width * 0.8 + n2 * t
-
-                ax.plot([pt1[0], pt2[0]], [pt1[1], pt2[1]],
-                        color="black", linewidth=lw * 0.6,
-                        solid_capstyle="round")
-
-    # Draw nested impossible triangles
-    scales = [42, 34, 26, 18, 11, 6]
-    for s in scales:
-        n = max(3, int(s * 0.4))
-        lw = 0.25 + 0.2 * (s / 42)
-        draw_penrose_triangle(cx, cy, s, n, lw)
+    for poly, angle in PENROSE_FACES:
+        transformed = [transform(p) for p in poly]
+        hatch_polygon(ax, transformed, angle, spacing=0.45, linewidth=0.3)
+        outline = np.array(transformed + [transformed[0]])
+        ax.plot(
+            outline[:, 0],
+            outline[:, 1],
+            color="black",
+            linewidth=1.1,
+            solid_capstyle="round",
+        )
 
     save(fig, "abstract parallel lines penrose impossible triangle paradox pattern black white texture")
 

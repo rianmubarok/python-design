@@ -40,19 +40,34 @@ def save(fig, name):
 
 
 def abstract_optical_poggendorff_illusion_line_shift_pattern_black_white_texture():
-    """Tweak: Parallel diagonal lines interrupted by vertical solid bars (Poggendorff optical illusion)."""
+    """Poggendorff Illusion pattern with visible vertical masking bars and line shift effect."""
     fig, ax = setup_ax()
-    
-    n_lines = 40
+
+    bar_left = 38
+    bar_right = 62
+    n_lines = 35
     y_starts = np.linspace(-30, 100, n_lines)
-    
-    # Draw solid vertical masking bar
-    bar1 = Rectangle((40, 0), 20, 100, fill=True, facecolor="black")
-    ax.add_patch(bar1)
-    
+
+    # Offset vertikal untuk menciptakan/memperkuat ilusi pergeseran garis Poggendorff
+    shift_offset = 2.5
+
     for y0 in y_starts:
-        # Diagonal lines crossing at 45 degrees
-        ax.plot([0, 100], [y0, y0 + 100], color="black", linewidth=1.2)
+        # Garis diagonal sisi kiri (berhenti di batas kiri batang)
+        y_left_end = y0 + bar_left
+        ax.plot([0, bar_left], [y0, y_left_end], color="black", linewidth=1.5, zorder=1)
+
+        # Garis diagonal sisi kanan (mulai dari batas kanan batang dengan offset)
+        y_right_start = y0 + bar_right + shift_offset
+        y_right_end = y0 + 100 + shift_offset
+        ax.plot([bar_right, 100], [y_right_start, y_right_end], color="black", linewidth=1.5, zorder=1)
+
+    # Batang penghalang vertikal di tengah
+    bar = Rectangle((bar_left, 0), bar_right - bar_left, 100, fill=True, facecolor="black", zorder=2)
+    ax.add_patch(bar)
+
+    # Garis tepi putih/kontras untuk memperjelas struktur isolasi
+    ax.plot([bar_left, bar_left], [0, 100], color="white", linewidth=1.0, zorder=3)
+    ax.plot([bar_right, bar_right], [0, 100], color="white", linewidth=1.0, zorder=3)
 
     save(fig, "abstract optical poggendorff illusion line shift pattern black white texture")
 

@@ -39,57 +39,85 @@ def save(fig, name):
     print(f"Tersimpan: {jpg_path} | {svg_path}")
 
 
-def bulge_transform(pts, radius=42.0, strength=1.4):
-    """Apply radial optical bulge deformation to array of 2D points."""
-    bulged = []
-    for x, y in pts:
-        d = np.sqrt(x**2 + y**2)
-        if d < radius:
-            f = 1.0 + strength * (1.0 - (d / radius) ** 2)
-        else:
-            f = 1.0
-        bulged.append([x * f, y * f])
-    return np.array(bulged)
+def resample_and_bulge(pts, n_sub=8, radius=45.0, strength=0.6):
+    """Membagi garis ubin menjadi segmen halus lalu menerapkan efek cembung."""
+    dense_pts = []
+    n = len(pts)
+    for i in range(n):
+        p1 = pts[i]
+        p2 = pts[(i + 1) % n]
+        for t in np.linspace(0, 1, n_sub, endpoint=False):
+            dense_pts.append((1 - t) * p1 + t * p2)
+    dense_pts = np.array(dense_pts)
+
+    r = np.linalg.norm(dense_pts, axis=1)
+    factor = np.where(r < radius, 1.0 + strength * (1.0 - (r / radius) ** 2), 1.0)
+    return dense_pts * factor[:, np.newaxis]
 
 
 def abstract_optical_cairo_pentagon_optical_bulge_corner_radius_pattern_black_white_texture():
-    """Optical experiment: Cairo pentagonal tiling with non-linear radial lens bulge and vertex pinch."""
     fig, ax = setup_ax()
 
-    # Generate standard Cairo pentagon base tile template vertices
-    a = 7.5
-    # Base pentagon template
-    base_pentagon = np.array(
-        [[0, 0], [a, 0], [a + a / 2, a * np.sqrt(3) / 2], [a / 2, a + a * np.sqrt(3) / 2], [0, a]]
-    )
+    # Parameter Geometri Cairo Pentagonal Tiling Presisi
+    a = 8.0
+    # Panjang unit cell
+    d = a * (1 + np.sqrt(3) / 2)
 
-    # Replicate Cairo pentagons over grid
-    n_tiles = 7
-    offsets = np.linspace(-38, 38, n_tiles)
+    # Replikasi Grid Cairo
+    step = 2 * d
+    grid_range = np.arange(-75, 75, step)
 
-    for i, ox in enumerate(offsets):
-        for j, oy in enumerate(offsets):
-            for rotate_idx in range(4):
-                # Rotate pentagon template
-                theta = rotate_idx * np.pi / 2
-                c, s = np.cos(theta), np.sin(theta)
-                R = np.array([[c, -s], [s, c]])
+    for gx in grid_range:
+        for gy in grid_range:
+            # Pusat-pusat simpul grid
+            centers = [
+                (gx, gy),
+                (gx + d, gy + d),
+            ]
 
-                transformed = base_pentagon @ R.T + np.array([ox, oy])
+            for cx, cy in centers:
+                # Titik-titik sudut pembentuk 4 pentagon Cairo simetris
+                v0 = np.array([cx, cy])
+                v_N = np.array([cx, cy + a])
+                v_S = np.array([cx, cy - a])
+                v_E = np.array([cx + a, cy])
+                v_W = np.array([cx - a, cy])
 
-                # Apply optical bulge transform
-                bulged_pts = bulge_transform(transformed)
+                v_NE = np.array([cx + d, cy + d])
+                v_NW = np.array([cx - d, cy + d])
+                v_SW = np.array([cx - d, cy - d])
+                v_SE = np.array([cx + d, cy - d])
 
-                fill_val = (i + j + rotate_idx) % 2 == 0
+                # 4 Pentagon sejati yang saling mengunci
+                pentagons = [
+                    np.array([v0, v_E, v_NE, v_N, v0]),
+                    np.array([v0, v_N, v_NW, v_W, v0]),
+                    np.array([v0, v_W, v_SW, v_S, v0]),
+                    np.array([v0, v_S, v_SE, v_E, v0]),
+                ]
 
-                poly = Polygon(
-                    bulged_pts,
-                    closed=True,
-                    facecolor="black" if fill_val else "white",
-                    edgecolor="black",
-                    linewidth=1.2,
-                )
-                ax.add_patch(poly)
+                for p_idx, pts in enumerate(pentagons):
+                    pts_unique = pts[:-1]
+                    c_pt = pts_unique.mean(axis=0)
+
+                    if np.abs(c_pt[0]) > 55 or np.abs(c_pt[1]) > 55:
+                        continue
+
+                    # Subdivisi dan distorsi cembung
+                    b_pts = resample_and_bulge(pts_unique)
+
+                    # Warna ubin berselang-seling hitam dan putih
+                    color_val = (int((cx + 100) / a) + int((cy + 100) / a) + p_idx) % 2 == 0
+
+                    poly = Polygon(
+                        b_pts,
+                        closed=True,
+                        facecolor="black" if color_val else "white",
+                        edgecolor="black",
+                        linewidth=0.8,
+                        zorder=2,
+                    )
+                    ax.add_patch(poly)
 
     save(
         fig,

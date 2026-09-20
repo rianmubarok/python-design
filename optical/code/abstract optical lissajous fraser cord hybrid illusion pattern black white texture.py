@@ -39,43 +39,63 @@ def save(fig, name):
 
 
 def generate():
-    """Wild combo: Lissajous curves used as RAILS for Fraser cord illusion segments."""
+    """Lissajous curves used as RAILS with dense Fraser cord illusion segments."""
     fig, ax = setup_ax()
 
-    t_curve = np.linspace(0, 2 * np.pi, 3000)
-    tilt_angle = np.radians(20)
+    t_curve = np.linspace(0, 2 * np.pi, 4000)
+    tilt_angle = np.radians(22)  # Sudut kemiringan khas Fraser Cord
 
     freq_pairs = [(3, 4), (5, 6), (2, 3), (7, 5)]
-    scales = [40, 34, 28, 20]
+    scales = [42, 34, 26, 18]
 
-    for (fa, fb), scale in zip(freq_pairs, scales):
+    for idx, ((fa, fb), scale) in enumerate(zip(freq_pairs, scales)):
         delta = np.pi / 4
         x_liss = scale * np.sin(fa * t_curve + delta)
         y_liss = scale * np.cos(fb * t_curve)
 
-        # Sample sparse positions along curve for cord segments
-        sample_step = 30
-        for k in range(0, len(t_curve) - sample_step, sample_step):
+        # 1. Gambar Garis Kurva Lissajous Utama sebagai Rail (Fondasi Ilusi)
+        ax.plot(x_liss, y_liss, color="black", linewidth=1.5, alpha=0.85, zorder=1)
+
+        # 2. Gambar Segmen Tali Fraser Rapat Sepanjang Kurva
+        sample_step = 8  # Jarak diperketat agar membentuk pita tali kontinu
+        for k in range(1, len(t_curve) - 1, sample_step):
             cx = x_liss[k]
             cy = y_liss[k]
 
-            # Local tangent direction
-            dx_tan = x_liss[k + 1] - x_liss[k - 1] if k > 0 else x_liss[1] - x_liss[0]
-            dy_tan = y_liss[k + 1] - y_liss[k - 1] if k > 0 else y_liss[1] - y_liss[0]
+            # Vektor Tangensial Lokal
+            dx_tan = x_liss[k + 1] - x_liss[k - 1]
+            dy_tan = y_liss[k + 1] - y_liss[k - 1]
             tangent = np.arctan2(dy_tan, dx_tan)
-            cord_dir = tangent + tilt_angle
 
-            segment_len = 3.0
+            # Kemiringan Segmen Fraser (Selang-seling arah tilt antar-layer)
+            direction_tilt = tilt_angle if idx % 2 == 0 else -tilt_angle
+            cord_dir = tangent + direction_tilt
+
+            segment_len = 3.5
             ddx = (segment_len / 2) * np.cos(cord_dir)
             ddy = (segment_len / 2) * np.sin(cord_dir)
 
-            ax.plot([cx - ddx, cx + ddx], [cy - ddy, cy + ddy],
-                    color="black", linewidth=2.4)
-            ax.plot([cx - ddx * 0.5, cx + ddx * 0.5],
-                    [cy - ddy * 0.5, cy + ddy * 0.5],
-                    color="white", linewidth=0.9)
+            # Segmen Hitam Utama
+            ax.plot(
+                [cx - ddx, cx + ddx],
+                [cy - ddy, cy + ddy],
+                color="black",
+                linewidth=2.2,
+                zorder=2,
+            )
+            # Garis Inti Putih di Tengah Segmen (Efek Tali Terpuntir)
+            ax.plot(
+                [cx - ddx * 0.45, cx + ddx * 0.45],
+                [cy - ddy * 0.45, cy + ddy * 0.45],
+                color="white",
+                linewidth=0.8,
+                zorder=3,
+            )
 
-    save(fig, "abstract optical lissajous fraser cord hybrid illusion pattern black white texture")
+    save(
+        fig,
+        "abstract optical lissajous fraser cord hybrid illusion pattern black white texture",
+    )
 
 
 if __name__ == "__main__":

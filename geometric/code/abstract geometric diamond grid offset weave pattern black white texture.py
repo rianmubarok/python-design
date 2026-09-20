@@ -1,94 +1,101 @@
 from datetime import datetime
 from pathlib import Path
-import matplotlib.pyplot as plt
-import numpy as np
 import matplotlib
 
 matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
 SIZE = 4000
 DPI = 300
 DATE = datetime.now().strftime("%d%m%Y")
+PERIOD = 1.0
 
-SCRIPT DIR = Path(  file  ).resolve().parent
-OUTPUT DIR = SCRIPT DIR.parent / "output"
-JPG DIR = OUTPUT DIR / "jpg"
-SVG DIR = OUTPUT DIR / "svg"
-JPG DIR.mkdir(parents=True, exist ok=True)
-SVG DIR.mkdir(parents=True, exist ok=True)
+SCRIPT_DIR = Path(__file__).resolve().parent
+OUTPUT_DIR = SCRIPT_DIR.parent / "output"
+JPG_DIR = OUTPUT_DIR / "jpg"
+SVG_DIR = OUTPUT_DIR / "svg"
+EPS_DIR = OUTPUT_DIR / "eps"
+JPG_DIR.mkdir(parents=True, exist_ok=True)
+SVG_DIR.mkdir(parents=True, exist_ok=True)
+EPS_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def setup ax():
+def setup_ax():
     fig, ax = plt.subplots(figsize=(SIZE / DPI, SIZE / DPI), dpi=DPI)
-    fig.subplots adjust(left=0, right=1, top=1, bottom=0)
-    ax.set facecolor("white")
-    ax.set aspect("equal")
+    fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    ax.set_position([0, 0, 1, 1])
+    ax.set_facecolor("white")
+    ax.set_xlim(0, PERIOD)
+    ax.set_ylim(0, PERIOD)
+    ax.set_aspect("equal", adjustable="box")
     ax.axis("off")
+    ax.margins(0)
     return fig, ax
 
 
 def save(fig, name):
-    jpg path = JPG DIR / f"{name} {DATE}.jpg"
-    svg path = SVG DIR / f"{name} {DATE}.svg"
-    fig.savefig(jpg path, dpi=DPI, pad inches=0, facecolor="white")
-    fig.savefig(svg path, format="svg", pad inches=0, facecolor="white")
+    jpg_path = JPG_DIR / f"{name} {DATE}.jpg"
+    svg_path = SVG_DIR / f"{name} {DATE}.svg"
+    eps_path = EPS_DIR / f"{name} {DATE}.eps"
+    fig.savefig(jpg_path, dpi=DPI, pad_inches=0, facecolor="white")
+    fig.savefig(svg_path, format="svg", pad_inches=0, facecolor="white")
+    orig_size = fig.get_size_inches()
+    fig.set_size_inches(30, 30)
+    fig.savefig(eps_path, format="eps", pad_inches=0, facecolor="white", dpi=DPI)
+    fig.set_size_inches(orig_size[0], orig_size[1])
     plt.close(fig)
-    print(f"Tersimpan: {jpg path} | {svg path}")
+    print(f"Tersimpan: {jpg_path} | {svg_path} | {eps_path}")
 
 
-def draw diamond(cx, cy, w, h):
-    """Menggambar belah ketupat (diamond) berpusat di (cx, cy)."""
-    x = [cx, cx + w / 2.0, cx, cx - w / 2.0, cx]
-    y = [cy + h / 2.0, cy, cy - h / 2.0, cy, cy + h / 2.0]
-    return x, y
+def plot_wrapped(ax, xs, ys, **kwargs):
+    for dx in (-PERIOD, 0.0, PERIOD):
+        for dy in (-PERIOD, 0.0, PERIOD):
+            ax.plot(
+                [x + dx for x in xs],
+                [y + dy for y in ys],
+                **kwargs,
+            )
 
 
-def diamond grid offset weave():
-    """Teselasi belah ketupat (diamond) teratur, presisi, dan interlocking."""
-    fig, ax = setup ax()
+def diamond_points(cx, cy, w, h):
+    return (
+        [cx, cx + w / 2.0, cx, cx - w / 2.0, cx],
+        [cy + h / 2.0, cy, cy - h / 2.0, cy, cy + h / 2.0],
+    )
 
-    # Dimensi belah ketupat (lebar dan tinggi)
-    w = 6.0
-    h = 8.0
 
-    cols = 20
-    rows = 20
+def diamond_grid_offset_weave():
+    """Teselasi belah ketupat interlocking, full canvas, seamless."""
+    fig, ax = setup_ax()
 
-    # Jarak kisi berselang-seling (staggered offset grid)
-    step x = w
-    step y = h / 2.0
+    cols = 16
+    rows = 24
+    w = PERIOD / cols
+    h = w * (8.0 / 6.0)
+    step_x = w
+    step_y = h / 2.0
 
-    min x, max x = float("inf"), float("-inf")
-    min y, max y = float("inf"), float("-inf")
-
-    for r in range(rows):
-        for c in range(cols):
-            cx = c * step x
+    for r in range(-1, rows + 1):
+        for c in range(-1, cols + 1):
+            cx = c * step_x
             if r % 2 != 0:
-                cx += step x / 2.0
-            cy = r * step y
+                cx += step_x / 2.0
+            cy = r * step_y
+            xs, ys = diamond_points(cx, cy, w, h)
+            lw = 1.35 if r % 2 == 0 else 0.85
+            plot_wrapped(
+                ax,
+                xs,
+                ys,
+                color="black",
+                linewidth=lw,
+                solid_capstyle="round",
+                solid_joinstyle="miter",
+                clip_on=True,
+            )
 
-            x pts, y pts = draw diamond(cx, cy, w, h)
-
-            min x, max x = min(min x, min(x pts)), max(max x, max(x pts))
-            min y, max y = min(min y, min(y pts)), max(max y, max(y pts))
-
-            # Variasi ketebalan garis berdasarkan baris untuk efek tenunan yang halus
-            lw = 1.2 if r % 2 == 0 else 0.8
-            ax.plot(x pts, y pts, color="black", linewidth=lw, solid capstyle="round")
-
-    # Framing simetris terpusat presisi
-    cx final = (min x + max x) / 2.0
-    cy final = (min y + max y) / 2.0
-    span w = max x - min x
-    span h = max y - min y
-    pad = max(span w, span h) / 2.0 + 2.0
-
-    ax.set xlim(cx final - pad, cx final + pad)
-    ax.set ylim(cy final - pad, cy final + pad)
-
-    save(fig, "abstract geometric diamond grid offset weave pattern black white texture"))
+    save(fig, "abstract geometric diamond grid offset weave pattern black white texture")
 
 
-if   name   == "  main  ":
-    diamond grid offset weave()
+if __name__ == "__main__":
+    diamond_grid_offset_weave()

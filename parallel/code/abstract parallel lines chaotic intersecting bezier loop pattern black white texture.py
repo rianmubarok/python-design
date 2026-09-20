@@ -39,37 +39,43 @@ def save(fig, name):
 
 
 def abstract_parallel_lines_chaotic_intersecting_bezier_loop_pattern_black_white_texture():
-    """Wild: Complex chaotic intersecting smooth curves simulating multi-dimensional parallel flow."""
     fig, ax = setup_ax()
-    
-    n_lines = 40
-    t = np.linspace(0, 2 * np.pi, 500)
-    
+
+    n_lines = 50
+    t = np.linspace(0, 2 * np.pi, 1000)  # Tingkatkan sampel agar garis lebih halus
+
+    # Gunakan frekuensi tetap/bertahap agar antar garis tetap memiliki alur paralel
+    freq1 = 4.0
+    freq2 = 7.0
+
     for i in range(n_lines):
-        # Base circular path
-        r_base = 10 + i * 1.5
-        
-        # Add high-frequency chaotic displacements
-        freq1 = 3 + np.random.rand() * 2
-        freq2 = 5 + np.random.rand() * 3
-        
-        amp1 = 15 * np.sin(i * 0.1)
-        amp2 = 8 * np.cos(i * 0.15)
-        
+        r_base = 15 + i * 1.2
+
+        # Amplitudo bertahap (smooth gradient)
+        amp1 = 12 * np.sin(i * 0.08)
+        amp2 = 6 * np.cos(i * 0.12)
+
         r = r_base + amp1 * np.sin(freq1 * t) + amp2 * np.cos(freq2 * t)
-        
-        # Convert to polar, then add a drifting center
-        drift_x = 50 + 10 * np.sin(i * 0.2)
-        drift_y = 50 + 10 * np.cos(i * 0.2)
-        
+
+        drift_x = 50 + 8 * np.sin(i * 0.15)
+        drift_y = 50 + 8 * np.cos(i * 0.15)
+
         x = drift_x + r * np.cos(t)
         y = drift_y + r * np.sin(t)
-        
-        lw = 0.4 + 0.4 * (np.random.rand())
-        
-        ax.plot(x, y, color="black", linewidth=lw, alpha=0.9)
-        
-    save(fig, "abstract parallel lines chaotic intersecting bezier loop pattern black white texture")
+
+        ax.plot(
+            x,
+            y,
+            color="black",
+            linewidth=0.6,
+            alpha=0.85,
+            antialiased=True,  # Menghindari garis terlihat putus-putus
+        )
+
+    save(
+        fig,
+        "abstract parallel lines chaotic intersecting bezier loop pattern black white texture",
+    )
 
 
 if __name__ == "__main__":

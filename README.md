@@ -7,7 +7,7 @@
 - Resolusi: 4000 x 4000 px
 - DPI: 300
 - Format: JPG + SVG + EPS
-- Suffix tanggal otomatis: `_DDMMYYYY` (contoh: `_12092026`)
+- Suffix tanggal otomatis: ` DDMMYYYY` (contoh: ` 12092026`)
 
 ### Struktur Folder
 Setiap kategori memakai struktur yang sama:
@@ -34,6 +34,7 @@ python-design/
 ├── geometric/
 ├── organic/
 ├── dynamic/
+├── halloween/
 ├── gallery.html
 └── README.md
 ```
@@ -55,9 +56,9 @@ Kategori lain mengikuti pola yang sama (`code/`, `output/`, `submitted/`, dan `t
 5. Tanggal otomatis ditambahkan ke nama file output
 
 ### Penamaan File
-- Format: `abstract_[deskripsi_pola]_[elemen]_[gaya]_[warna]_[kegunaan].py`
-- Contoh: `abstract_parallel_lines_random_thickness_pattern_black_white_texture.py`
-- Output: `abstract_parallel_lines_random_thickness_pattern_black_white_texture_12092026.jpg`
+- Format: `abstract [deskripsi_pola] [elemen] [gaya] [warna] [kegunaan].py`
+- Contoh: `abstract parallel lines random thickness pattern black white texture.py`
+- Output: `abstract parallel lines random thickness pattern black white texture 12092026.jpg`
 
 ### Keyword Wajib
 - `abstract` — deskripsi gaya
@@ -78,7 +79,7 @@ pip install matplotlib numpy
 ### Menjalankan
 ```bash
 cd parallel/code
-python abstract_parallel_lines_random_thickness_pattern_black_white_texture.py
+python "abstract parallel lines random thickness pattern black white texture.py"
 ```
 
 ### Gallery

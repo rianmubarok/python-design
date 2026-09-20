@@ -40,48 +40,48 @@ def save(fig, name):
 
 
 def abstract_optical_opart_bulging_squircle_radius_morph_grid_pattern_black_white_texture():
-    """Optical experiment: Op-Art squircle grid with radial lens bulging deformation and dynamic corner morphing."""
+    """Optical experiment: Op-Art squircle grid with smooth radial lens bulging deformation."""
     fig, ax = setup_ax()
 
     grid_res = 22
-    xs = np.linspace(-45, 45, grid_res)
-    ys = np.linspace(-45, 45, grid_res)
+    xs = np.linspace(-44, 44, grid_res)
+    ys = np.linspace(-44, 44, grid_res)
 
-    lens_radius = 42.0
-    strength = 1.45
+    lens_radius = 45.0
+    strength = 0.55  # Kekuatan distorsi disesuaikan agar transisi mulus
 
-    for x in xs:
-        for y in ys:
+    for i, x in enumerate(xs):
+        for j, y in enumerate(ys):
             dist = np.sqrt(x**2 + y**2)
 
+            # Distorsi Cembung Lensa (Spherical bulge offset)
             if dist < lens_radius:
-                # Spherical magnification / displacement
-                factor = 1.0 + (strength * (1.0 - (dist / lens_radius) ** 2))
+                # Transisi kurva halus (cosine-based smooth factor)
+                factor = 1.0 + strength * (np.cos((dist / lens_radius) * (np.pi / 2)) ** 2)
             else:
                 factor = 1.0
 
             wx = x * factor
             wy = y * factor
 
-            base_w = 3.2 * factor
-            base_h = 3.2 * factor
+            # Ukuran dasar squircle dikontrol ketat agar tidak saling bertabrakan
+            base_size = 3.2 * (0.85 + 0.3 * (factor - 1.0))
 
-            # Morph corner radius based on radial distance from center
-            corner_r = max(0.2, min(base_w * 0.45, 1.4 * (1.0 - dist / 50.0)))
+            # Morphing radius sudut: makin ke tengah makin bulat (squircle -> circle)
+            corner_r = min(base_size * 0.45, max(0.3, 1.4 * (1.0 - dist / 60.0)))
 
-            # Fill condition alternates like checkerboard
-            idx_x = int((x + 45) / 90 * grid_res)
-            idx_y = int((y + 45) / 90 * grid_res)
-            fill_val = (idx_x + idx_y) % 2 == 0
+            # Pola warna berselang-seling papan catur
+            fill_val = (i + j) % 2 == 0
 
             patch = FancyBboxPatch(
-                (wx - base_w / 2, wy - base_h / 2),
-                base_w,
-                base_h,
-                boxstyle=f"round,pad=0,rounding_size={corner_r}",
+                (wx - base_size / 2, wy - base_size / 2),
+                base_size,
+                base_size,
+                boxstyle=f"round,pad=0,rounding_size={corner_r:.2f}",
                 facecolor="black" if fill_val else "white",
                 edgecolor="black",
-                linewidth=1.2,
+                linewidth=1.0,
+                zorder=2,
             )
             ax.add_patch(patch)
 

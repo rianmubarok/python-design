@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch, Circle
+from matplotlib.patches import Circle
 from pathlib import Path
 from datetime import datetime
 
@@ -40,37 +40,62 @@ def save(fig, name):
 
 
 def generate():
-    """Ebbinghaus but arranged along a spiral path, with radius-based context size modulation."""
+    """Ebbinghaus illusion arranged along a non-overlapping Archimedean spiral."""
     fig, ax = setup_ax()
 
-    n_clusters = 18
-    spiral_turns = 2.5
-    max_r = 42
+    n_clusters = 15
+    a_spiral = 4.5  # Skala pertumbuhan spiral
+    
+    # Penentuan nilai theta berbasis deret agar jarak fisik antar-kluster selalu aman
+    thetas = []
+    curr_theta = 2.2
+    for _ in range(n_clusters):
+        thetas.append(curr_theta)
+        # Tambah theta secara proporsional agar tidak bertabrakan saat r membesar
+        curr_theta += 0.85 / (curr_theta ** 0.5)
+
+    thetas = np.array(thetas)
+    r_vals = a_spiral * thetas
 
     for k in range(n_clusters):
-        t = k / n_clusters * spiral_turns * 2 * np.pi
-        r = 8 + (max_r - 8) * (k / n_clusters)
+        t = thetas[k]
+        r = r_vals[k]
+
         cx = r * np.cos(t)
         cy = r * np.sin(t)
 
-        # Central dot (all identical size)
-        center_r = 2.5
-        ax.add_patch(Circle((cx, cy), center_r, facecolor="black"))
+        # 1. Lingkaran Hitam Pusat (Ukuran sama)
+        center_r = 1.6
+        ax.add_patch(Circle((cx, cy), center_r, facecolor="black", zorder=3))
 
-        # Surrounding context circles — size grows with spiral radius
+        # 2. Lingkaran Luar Penjelas (Besar vs Kecil bergantian)
         is_large = k % 2 == 0
         n_outer = 6 if is_large else 8
-        outer_r = 3.5 + k * 0.2 if is_large else 1.0 + k * 0.05
-        ring_r = center_r + outer_r + 1.5
+        
+        # Batasi ukuran outer_r agar kluster tetap rapi
+        outer_r = 2.1 + (k * 0.08) if is_large else 0.7 + (k * 0.02)
+        ring_r = center_r + outer_r + 0.6
 
         for j in range(n_outer):
-            a = j * 2 * np.pi / n_outer
-            ox = cx + ring_r * np.cos(a)
-            oy = cy + ring_r * np.sin(a)
-            ax.add_patch(Circle((ox, oy), outer_r, fill=False,
-                                edgecolor="black", linewidth=1.5))
+            angle = t + j * (2 * np.pi / n_outer)
+            ox = cx + ring_r * np.cos(angle)
+            oy = cy + ring_r * np.sin(angle)
+            
+            ax.add_patch(
+                Circle(
+                    (ox, oy),
+                    outer_r,
+                    fill=False,
+                    edgecolor="black",
+                    linewidth=1.2,
+                    zorder=2,
+                )
+            )
 
-    save(fig, "abstract optical ebbinghaus size illusion spiral path pattern black white texture")
+    save(
+        fig,
+        "abstract optical ebbinghaus size illusion spiral path pattern black white texture",
+    )
 
 
 if __name__ == "__main__":
