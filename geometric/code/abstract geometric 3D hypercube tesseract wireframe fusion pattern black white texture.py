@@ -22,8 +22,8 @@ def setup_ax():
     fig, ax = plt.subplots(figsize=(SIZE / DPI, SIZE / DPI), dpi=DPI)
     fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
     ax.set_facecolor("white")
-    ax.set_xlim(-60, 60)
-    ax.set_ylim(-60, 60)
+    ax.set_xlim(-5, 105)
+    ax.set_ylim(-5, 105)
     ax.set_aspect("equal")
     ax.axis("off")
     return fig, ax
@@ -56,12 +56,12 @@ def abstract_geometric_3D_hypercube_tesseract_wireframe_fusion_pattern_black_whi
     
     rot_vertices = vertices_4d @ rot_4d.T
     
-    # Perspective projection 4D -> 3D -> 2D
+    # Perspective projection 4D -> 3D -> 2D (diperbesar maksimal)
     d4 = 3.0
     pts_3d = rot_vertices[:, :3] / (d4 - rot_vertices[:, 3:])
     
     d3 = 3.0
-    pts_2d = pts_3d[:, :2] / (d3 - pts_3d[:, 2:]) * 60.0
+    pts_2d = pts_3d[:, :2] / (d3 - pts_3d[:, 2:]) * 200.0 + 50.0  # Perbesar dari 120 ke 200, memenuhi canvas
     
     # Connect edges (vertices differing by 1 coordinate)
     for i in range(16):

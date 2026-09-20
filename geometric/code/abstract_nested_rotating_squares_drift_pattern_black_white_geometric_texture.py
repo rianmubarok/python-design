@@ -30,8 +30,8 @@ def setup_ax():
 
 
 def save(fig, name):
-    jpg_path = JPG_DIR / f"{name}_{DATE}.jpg"
-    svg_path = SVG_DIR / f"{name}_{DATE}.svg"
+    jpg_path = JPG_DIR / f"{name} {DATE}.jpg"
+    svg_path = SVG_DIR / f"{name} {DATE}.svg"
     fig.savefig(jpg_path, dpi=DPI, pad_inches=0, facecolor="white")
     fig.savefig(svg_path, format="svg", pad_inches=0, facecolor="white")
     plt.close(fig)
@@ -39,15 +39,17 @@ def save(fig, name):
 
 
 def nested_rotating_squares_drift():
-    """Tweak: the nesting center slides toward a corner as the squares grow"""
+    """Tweak: the nesting center slides toward a corner as the squares grow, but stays within bounds"""
     fig, ax = setup_ax()
     corners = [(-1, -1), (1, -1), (1, 1), (-1, 1)]
     n_squares = 30
     for i in range(n_squares):
         t = i / (n_squares - 1)
-        size = 2 + i * 1.3
-        cx = 40 + 18 * t
-        cy = 40 + 18 * t
+        size = 2 + i * 1.1  # Reduced growth rate
+        # Keep center drift within safe bounds considering square size
+        max_drift = min(12, 40 - size)  # Ensure squares don't go outside canvas
+        cx = 50 + max_drift * t * 0.5  # Reduced drift amount
+        cy = 50 + max_drift * t * 0.3  # Different drift rates for x and y
         angle = i * 5.0
         rad = np.radians(angle)
         xs, ys = [], []
@@ -60,7 +62,7 @@ def nested_rotating_squares_drift():
         ys.append(ys[0])
         lw = 1.0 + 2.0 * t
         ax.plot(xs, ys, color="black", linewidth=lw)
-    save(fig, "abstract_nested_rotating_squares_drift_pattern_black_white_geometric_texture")
+    save(fig, "abstract nested rotating squares drift pattern black white geometric texture")
 
 
 if __name__ == "__main__":
