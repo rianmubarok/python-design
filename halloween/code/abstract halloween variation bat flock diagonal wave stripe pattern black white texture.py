@@ -2,7 +2,7 @@ import matplotlib
 matplotlib.use("Agg")
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon, Circle
+from matplotlib.patches import Polygon
 from pathlib import Path
 from datetime import datetime
 
@@ -42,17 +42,16 @@ def save(fig, name):
 
 def bat_poly(cx, cy, s, angle=0.0):
     pts = np.array([
-        [0.00, 0.08], [0.12, 0.18], [0.10, 0.05], [0.42, 0.22], [0.78, 0.38],
-        [0.62, 0.08], [0.95, 0.12], [0.55, -0.08], [0.72, -0.28], [0.28, -0.10],
+        [0.00,  0.08], [0.12,  0.18], [0.10,  0.05], [0.42,  0.22], [0.78,  0.38],
+        [0.62,  0.08], [0.95,  0.12], [0.55, -0.08], [0.72, -0.28], [0.28, -0.10],
         [0.18, -0.22], [0.08, -0.08], [0.00, -0.18],
-        [-0.08, -0.08], [-0.18, -0.22], [-0.28, -0.10], [-0.72, -0.28],
-        [-0.55, -0.08], [-0.95, 0.12], [-0.62, 0.08], [-0.78, 0.38],
+        [-0.08,-0.08], [-0.18,-0.22], [-0.28,-0.10], [-0.72,-0.28],
+        [-0.55,-0.08], [-0.95, 0.12], [-0.62, 0.08], [-0.78, 0.38],
         [-0.42, 0.22], [-0.10, 0.05], [-0.12, 0.18],
     ]) * s
     c, s_ = np.cos(angle), np.sin(angle)
     R = np.array([[c, -s_], [s_, c]])
-    pts = (R @ pts.T).T
-    return pts + [cx, cy]
+    return (R @ pts.T).T + [cx, cy]
 
 
 def draw():
@@ -60,30 +59,23 @@ def draw():
     size decreasing toward stripe edges to mimic depth/perspective."""
     fig, ax = setup_ax()
     np.random.seed(3)
-    stripe_angle = np.radians(35)      # diagonal direction of each stripe
-    stripe_spacing = 16.0              # perpendicular spacing between stripes
-    along_spacing = 8.0               # spacing along stripe
+    stripe_angle = np.radians(35)
+    stripe_spacing = 16.0
+    along_spacing = 8.0
 
-    # We'll parameterise in tilted coordinates
-    # u = along stripe, v = across stripe
     cos_a, sin_a = np.cos(stripe_angle), np.sin(stripe_angle)
 
-    # Generate positions in a large extended grid then filter to [0,PERIOD]
-    # use WRAPS for seamlessness
     positions = []
     for n_stripe in range(-4, 20):
         for n_along in range(-4, 24):
             u = n_along * along_spacing
             v = n_stripe * stripe_spacing
-            # wave oscillation across the stripe
             wave_offset = 2.5 * np.sin(u * 0.28)
             v_actual = v + wave_offset
-            # world coords
             wx = u * cos_a - v_actual * sin_a
             wy = u * sin_a + v_actual * cos_a
             wx = wx % PERIOD
             wy = wy % PERIOD
-            # size based on distance from stripe centre (v=0 mod stripe_spacing)
             v_frac = abs((v % stripe_spacing) - stripe_spacing / 2) / (stripe_spacing / 2)
             size = 3.0 + 2.5 * (1 - v_frac)
             fly_angle = stripe_angle + np.random.uniform(-0.2, 0.2)
