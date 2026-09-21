@@ -1,0 +1,4 @@
+Category 1: Abstract
+Category 2: Bacckgrounds/Textures
+
+abstract, vector, pattern, monochrome, black, white, background, texture, design, parallel, lines, parallel lines, linear, geometric, geometric pattern, abstract background, decorative, minimal, minimalist, modern, contemporary, composition, geometry, symmetry, balance, repetition, forms, visual, graphic, artwork, illustration, artistic, creative, generative, generative art, digital art, procedural, algorithmic, structured, abstract design, modern pattern, black and white, monochrome design, wallpaper, surface, ornament, backdrop, nirmana, linear pattern, line art
