@@ -1,0 +1,5 @@
+Focus on the [category], or you can check the existing files or the trash folder first to browse through them.
+
+Okay, now try to create several more experiments with [category] variations, but keep them patterned. Don't generate too many new patterns; instead, try altering/experimenting by resizing, shifting positions, changing the corner radius/curves, or other tweaks. Make sure to render specific patterns seamless where applicable, but if a pattern isn't naturally suited for seamless tiling, it doesn't need to be forced into a seamless design. If you feel like there are already too many, only then should you try creating a new one. (Experiment with things that don't exist yet—go for wild, out-of-the-box, random, and abstract ideas, or combinations of two or more completely different concepts or make refinements to the existing design variations).
+
+Go ahead and make it in larger quantities!

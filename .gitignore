@@ -1,8 +1,10 @@
 # Generated artwork (too large for git)
-output/
-**/submitted/jpg/
-**/submitted/svg/
-**/submitted/eps/
+vector/**/output/
+vector/**/submitted/jpg/
+vector/**/submitted/svg/
+vector/**/submitted/eps/
+video/**/output/
+video/**/submitted/
 
 # Python
 __pycache__/

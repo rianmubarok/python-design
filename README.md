@@ -1,91 +1,152 @@
 # Python Design — Nirmana Generator
 
-## Peraturan Project
+Generative art menggunakan Python untuk stock vector dan stock video.
 
-### Format Output
-- Rasio: 1:1 (Persegi)
-- Resolusi: 4000 x 4000 px
-- DPI: 300
-- Format: JPG + SVG + EPS
-- Suffix tanggal otomatis: ` DDMMYYYY` (contoh: ` 12092026`)
+---
 
-### Struktur Folder
-Setiap kategori memakai struktur yang sama:
+## Struktur Project
 
 ```
 python-design/
-├── parallel/
-│   ├── code/          # script generator (.py)
-│   ├── output/        # draft (belum disubmit)
-│   │   ├── jpg/
-│   │   ├── svg/
-│   │   └── eps/
-│   ├── submitted/     # sudah disubmit ke mikrostok
-│   │   ├── jpg/
-│   │   ├── svg/
-│   │   └── eps/
-│   └── trash/         # verisi yang dibuang
-├── grid/
-├── optical/
-├── waves/
-├── radial/
-├── contour/
-├── spiral/
-├── geometric/
-├── organic/
-├── dynamic/
-├── halloween/
+├── vector/                    # Semua kategori desain vektor
+│   ├── concentric/
+│   ├── contour/
+│   ├── dynamic/
+│   ├── flow/
+│   ├── fractal/
+│   ├── geometric/
+│   ├── grid/
+│   ├── halloween/
+│   ├── opart/
+│   ├── optical/
+│   ├── organic/
+│   ├── parallel/
+│   ├── radial/
+│   ├── sound/
+│   ├── spiral/
+│   ├── topological/
+│   └── waves/
+├── video/                     # Animated pattern untuk stock video
+│   └── concentric/
+├── task/                      # Catatan dan rencana kerja
+│   ├── vector.md
+│   └── video.md
+├── metadata/                  # Keyword dan metadata mikrostok
 ├── gallery.html
 └── README.md
 ```
 
-Kategori lain mengikuti pola yang sama (`code/`, `output/`, `submitted/`, dan `trash/` bila ada).
+---
 
-### Alur Kerja Folder
+## Struktur Setiap Kategori Vector
+
+```
+vector/<category>/
+├── code/          # script generator (.py)
+├── output/        # draft hasil render (tidak di-commit)
+│   ├── jpg/
+│   ├── svg/
+│   └── eps/
+├── submitted/     # sudah disubmit ke mikrostok (tidak di-commit)
+│   ├── jpg/
+│   ├── svg/
+│   └── eps/
+└── trash/         # versi yang dibuang
+```
+
+---
+
+## Struktur Setiap Kategori Video
+
+```
+video/<category>/
+├── code/          # script generator (.py)
+├── output/        # hasil render MP4 (tidak di-commit)
+│   ├── vertical/     # 2160×3840  9:16
+│   ├── landscape/    # 3840×2160  16:9
+│   └── square/       # 2160×2160  1:1
+├── submitted/     # sudah disubmit (tidak di-commit)
+│   ├── vertical/
+│   ├── landscape/
+│   └── square/
+└── trash/
+```
+
+---
+
+## Format Output Vector
+
+| Spec | Value |
+|------|-------|
+| Rasio | 1:1 (persegi) |
+| Resolusi | 4000 × 4000 px |
+| DPI | 300 |
+| Format | JPG + SVG + EPS |
+| Suffix | ` DDMMYYYY` otomatis |
+
+---
+
+## Format Output Video
+
+| Spec | Value |
+|------|-------|
+| Container | MP4 |
+| Codec | H.264 (libx264) |
+| FPS | 30 |
+| Durasi | 10 detik |
+| Audio | Tidak ada |
+| CRF | 18 |
+| Priority | Vertical 9:16 → Landscape 16:9 → Square 1:1 |
+
+---
+
+## Alur Kerja
+
 1. Script menulis hasil ke `output/` (draft).
 2. Desain yang sudah disubmit dipindah ke `submitted/`.
 3. Desain yang ditolak atau tidak dipakai dipindah ke `trash/`.
 
-`output/` dan `submitted/` tidak di-commit (file terlalu besar). Folder `code/` dan `trash/` mengikuti aturan git yang ada.
+`output/` dan `submitted/` **tidak di-commit** (file terlalu besar).  
+Folder `code/` dan `trash/` mengikuti git seperti biasa.
 
-### Cara Tambah Variasi Baru
-1. Masuk folder kategori → `code/` (misal `parallel/code/`)
-2. Buat file .py baru dengan nama full keyword mikrostok
-3. Jalankan script dari folder `code/`
-4. Output otomatis masuk ke `../output/jpg/`, `../output/svg/`, dan `../output/eps/`
-5. Tanggal otomatis ditambahkan ke nama file output
+---
 
-### Penamaan File
-- Format: `abstract [deskripsi_pola] [elemen] [gaya] [warna] [kegunaan].py`
+## Penamaan File
+
+- Format: `abstract [deskripsi] [elemen] [style] [warna] [kegunaan].py`
 - Contoh: `abstract parallel lines random thickness pattern black white texture.py`
-- Output: `abstract parallel lines random thickness pattern black white texture 12092026.jpg`
+- Output: `abstract parallel lines random thickness pattern black white texture 21092026.jpg`
 
-### Keyword Wajib
-- `abstract` — deskripsi gaya
-- `pattern` — tipe file
-- `black_white` — warna
-- `texture` — kegunaan
+---
 
-### Prasyarat
-- Python 3.x
-- Matplotlib
-- NumPy
+## Prasyarat
 
-### Instalasi
 ```bash
-pip install matplotlib numpy
+pip install matplotlib numpy pillow
 ```
 
-### Menjalankan
+Untuk video, ffmpeg harus tersedia di PATH.
+
+---
+
+## Cara Menjalankan
+
+**Vector:**
 ```bash
-cd parallel/code
+cd vector/parallel/code
 python "abstract parallel lines random thickness pattern black white texture.py"
 ```
 
-### Gallery
+**Video:**
+```bash
+cd video/concentric/code
+python anim_concentric_waves.py
+```
+
+---
+
+## Gallery
+
 Buka `gallery.html` di browser → klik "Open Folder" → pilih folder project ini.
 
-Gallery membaca JPG dari:
-- `output/jpg` → **Draft**
-- `submitted/jpg` → **Submitted**
-- `trash/jpg` → **Trash**
+Gallery membaca JPG dari subfolder `output/jpg`, `submitted/jpg`, dan `trash/jpg` di setiap kategori.
