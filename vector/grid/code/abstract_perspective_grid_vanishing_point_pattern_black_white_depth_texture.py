@@ -1,15 +1,16 @@
-import numpy as np
+﻿import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 from datetime import datetime
+SCRIPT_DIR = Path(__file__).resolve().parent
 
 SIZE = 4000
 DPI = 300
 SEED = 42
 DATE = datetime.now().strftime("%d%m%Y")
 
-JPG_DIR = Path("output/jpg")
-SVG_DIR = Path("output/svg")
+JPG_DIR = SCRIPT_DIR.parent / "output" / "jpg"
+SVG_DIR = SCRIPT_DIR.parent / "output" / "svg"
 JPG_DIR.mkdir(parents=True, exist_ok=True)
 SVG_DIR.mkdir(parents=True, exist_ok=True)
 
