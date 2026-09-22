@@ -87,13 +87,8 @@ def draw():
     dx, dy = PERIOD / cols, PERIOD / rows
     r_crescent = min(dx, dy) * 0.40
 
-    # Crescent tilt per tile position (indexed by (col%cols, row%rows))
-    tilt_map = {
-        (0, 0): np.radians(20),
-        (1, 0): np.radians(-15),
-        (0, 1): np.radians(-15),
-        (1, 1): np.radians(20),
-    }
+    # Single tilt for all tiles — same angle everywhere = seamless repeat
+    tilt = np.radians(20)
 
     # --- Stars: absolute positions in [0, PERIOD) ---
     rng = np.random.default_rng(42)
@@ -108,10 +103,9 @@ def draw():
         for col in range(-1, cols + 1):
             cx = (col + 0.5) * dx
             cy = (row + 0.5) * dy
-            tilt = tilt_map[(col % cols, row % rows)]
             for ox, oy in WRAPS:
                 px, py = cx + ox, cy + oy
-                if -15 <= px <= PERIOD + 15 and -15 <= py <= PERIOD + 15:
+                if -25 <= px <= PERIOD + 25 and -25 <= py <= PERIOD + 25:
                     draw_crescent(ax, px, py, r_crescent, tilt)
 
     # Draw stars (absolute positions, each wrapped to cover all edges)

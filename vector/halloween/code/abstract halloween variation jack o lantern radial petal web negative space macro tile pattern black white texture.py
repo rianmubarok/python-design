@@ -74,34 +74,44 @@ def draw_pumpkin_face(ax, cx, cy, s, fill="white"):
                            facecolor=inv, edgecolor="none", zorder=3))
 
 
-def draw_petal_web(ax, cx, cy, max_r, n_petals=8, n_rings=5, lw=0.7):
-    """Radial petal / web lines emanating from centre.
-    Spokes use max_r (half-diagonal) so they always reach tile corners."""
-    for k in range(n_petals):
-        a = k * 2 * np.pi / n_petals
+def draw_petal_web(ax, cx, cy, tile_w, tile_h, n_rings=6, lw=0.9):
+    """Radial web following the same seamless pattern as the ghost-web reference:
+    - half_diag radius so spokes reach all four corners
+    - 8 spokes at 45° increments (aligns symmetrically on a square tile)
+    - rings drawn arc-by-arc between adjacent spokes (not full circles)
+    - no alpha, solid lines — same style as ghost-web"""
+    half_diag = 0.5 * np.hypot(tile_w, tile_h)
+    max_r = half_diag
+
+    n_spokes = 8
+    spoke_angles = [k * 2 * np.pi / n_spokes for k in range(n_spokes)]
+    ring_radii = [max_r * (k + 1) / n_rings for k in range(n_rings)]
+
+    # Spokes
+    for a in spoke_angles:
         ax.plot([cx, cx + max_r * np.cos(a)],
                 [cy, cy + max_r * np.sin(a)],
-                color="white", linewidth=lw, alpha=0.60, zorder=1)
-    # Rings only up to the inscribed circle radius (half min-dimension)
-    inner_r = max_r * 0.72   # rings fill the inner area nicely
-    for i in range(1, n_rings + 1):
-        r = inner_r * i / n_rings
-        t = np.linspace(0, 2 * np.pi, 120)
-        ax.plot(cx + r * np.cos(t), cy + r * np.sin(t),
-                color="white", linewidth=lw * 0.8, alpha=0.50, zorder=1)
+                color="white", linewidth=lw, zorder=1)
+
+    # Rings — arc segment by segment between spokes (matches ghost-web pattern)
+    for r in ring_radii:
+        for k in range(n_spokes):
+            a1 = spoke_angles[k]
+            a2 = spoke_angles[(k + 1) % n_spokes]
+            t = np.linspace(a1, a2, 20)
+            ax.plot(cx + r * np.cos(t), cy + r * np.sin(t),
+                    color="white", linewidth=lw * 0.80, zorder=1)
 
 
 def draw():
     """2×2 macro tiles. Each tile: large pumpkin face centred, surrounded by a full
-    radial petal web. Spokes extend to the tile's half-diagonal so they reach every
-    corner — adjacent tiles share spoke endpoints, making the seam invisible."""
+    radial petal web. Same seamless technique as the ghost-web reference:
+    half-diagonal spokes + arc-segment rings + wide guard."""
     fig, ax = setup_ax()
 
     cols, rows = 2, 2
     dx, dy = PERIOD / cols, PERIOD / rows
     s = min(dx, dy) * 0.72
-    # half-diagonal ensures spokes reach tile corners seamlessly
-    web_r = 0.5 * np.hypot(dx, dy)
 
     for row in range(-1, rows + 1):
         for col in range(-1, cols + 1):
@@ -109,8 +119,8 @@ def draw():
             cy = (row + 0.5) * dy
             for ox, oy in WRAPS:
                 px, py = cx + ox, cy + oy
-                if -20 <= px <= PERIOD + 20 and -20 <= py <= PERIOD + 20:
-                    draw_petal_web(ax, px, py, web_r, n_petals=10, n_rings=6)
+                if -30 <= px <= PERIOD + 30 and -30 <= py <= PERIOD + 30:
+                    draw_petal_web(ax, px, py, dx, dy, n_rings=6)
                     draw_pumpkin_face(ax, px, py, s, fill="white")
 
     save(fig, "abstract halloween variation jack o lantern radial petal web negative space macro tile pattern black white texture")
