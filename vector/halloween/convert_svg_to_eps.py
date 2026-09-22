@@ -1,6 +1,7 @@
 """
 Konversi semua file SVG di halloween/output/svg ke EPS di halloween/output/eps
 menggunakan cairosvg.
+Output 4000×4000 px agar memenuhi syarat minimum 4MP di platform submission.
 """
 import cairosvg
 from pathlib import Path
@@ -22,10 +23,14 @@ for svg_path in svg_files:
         cairosvg.svg2ps(
             url=str(svg_path),
             write_to=str(eps_path),
-            output_width=2160,
-            output_height=2160,
+            output_width=4000,
+            output_height=4000,
         )
-        print(f"[OK] {eps_path.name}")
+        # Verifikasi BoundingBox
+        with open(eps_path, "rb") as f:
+            header = f.read(500).decode("latin-1")
+        bb = [l for l in header.split("\n") if "BoundingBox" in l and "%%%" not in l]
+        print(f"[OK] {eps_path.name[:80]}  {bb[0] if bb else ''}")
         success += 1
     except Exception as e:
         print(f"[ERROR] {svg_path.name}: {e}")
