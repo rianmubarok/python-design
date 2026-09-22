@@ -1,4 +1,4 @@
 Category 1: Backgrounds/Textures
 Category 2: Arts
 
-abstract, animation, animated, motion, pattern, background, texture, design, concentric, concentric circles, circular, circle, rings, radial, geometric, geometry, geometric pattern, lines, curves, symmetry, repetition, rotation, expanding, expanding circles, ripple, wave, movement, dynamic, hypnotic, mesmerizing, optical, visual effect, abstract background, decorative, minimal, minimalist, modern, contemporary, composition, visual, graphic, artwork, digital art, generative, generative art, procedural, algorithmic, motion graphics, looping, seamless loop, nirmana
+abstract, animation, animated, motion, pattern, background, texture, design, concentric, concentric circles, circular, circle, rings, radial, geometric, geometry, geometric pattern, lines, curves, symmetry, repetition, rotation, expanding, expanding circles, ripple, wave, movement, dynamic, hypnotic, mesmerizing, optical, visual effect, abstract background, decorative, minimal, minimalist, modern, contemporary, composition, visual, graphic, artwork, digital art, generative, procedural, algorithmic, motion graphics, looping, seamless loop, nirmana
