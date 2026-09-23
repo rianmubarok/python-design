@@ -9,6 +9,7 @@ Generative art menggunakan Python untuk stock vector dan stock video.
 ```
 python-design/
 ├── vector/                    # Semua kategori desain vektor
+│   ├── autumn/
 │   ├── concentric/
 │   ├── contour/
 │   ├── dynamic/
@@ -28,7 +29,7 @@ python-design/
 │   └── waves/
 ├── video/                     # Animated pattern untuk stock video
 │   └── concentric/
-├── task/                      # Catatan dan rencana kerja
+├── prompt/                    # Catatan dan prompt generator
 │   ├── vector.md
 │   └── video.md
 ├── metadata/                  # Keyword dan metadata mikrostok
