@@ -177,7 +177,7 @@ def render_video(
 
     if verbose:
         size_mb = output_path.stat().st_size / 1_048_576
-        print(f"\n  done → {output_path}  ({size_mb:.1f} MB)")
+        print(f"\n  done -> {output_path}  ({size_mb:.1f} MB)")
 
     return output_path
 
